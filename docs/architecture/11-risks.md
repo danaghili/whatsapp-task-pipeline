@@ -23,10 +23,16 @@ risks are recorded, not deleted).
 5. **Reminder timing starts at first sight.** A task's `created_at` is when
    the reminder daemon first sees it; a restart after long downtime resets
    ages. Harmless at household scale. Rationale not captured.
-6. **The 30-minute yardstick is measured, not yet stranger-proven.** AC-1.9's
-   walkthrough was validated end-to-end against simulated services; the
-   timed fresh-stranger run against a real HA remains open (see the coverage
-   ledger disposition).
+6. **The 30-minute yardstick is measured, not yet stranger-proven.** The
+   walkthrough's mechanics are proven against a real Home Assistant
+   (docs/hardening/inc-001-real-ha-verification.md); still open: a fresh-eyes
+   stranger with a stopwatch, a real WhatsApp bridge, and real phone taps.
+7. **Paraphrase de-dup misses at the default threshold.** Real-model
+   measurement: paraphrases score 0.81–0.83 against nomic-embed-text, under
+   the 0.85 default — a re-phrased ask lands as a second item (one tap to
+   dismiss; the designed fail direction). Same-wording asks (0.97+) are
+   caught. Threshold is user-tunable (`DEDUP_THRESHOLD`); the default is a
+   PM decision pending.
 
 **Resolved since adoption:**
 

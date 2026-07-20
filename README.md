@@ -149,6 +149,10 @@ OpenAI-compatible surface), e.g. `http://192.168.1.50:11434/v1`.
 wtp-check
 ```
 
+(Run every `wtp-*` command from the folder holding your `.env` — they read
+it automatically; anything already set in your shell or by a supervisor
+wins. No `source .env` needed, ever.)
+
 Green line per check, red line with the exact fix for anything wrong — the
 Home Assistant connection and token, the notify service, each to-do list, the
 chat model, the embeddings model (including the classic silent trap where a

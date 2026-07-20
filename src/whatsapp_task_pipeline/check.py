@@ -21,36 +21,17 @@ Principles (from the increment spec):
 import json
 import os
 import sys
-from pathlib import Path
 
 import requests
+
+# The ./.env absorption happens at package import (values already in the
+# environment win) — every wtp-* command gets it, not just the checker.
+from . import DOTENV_LOADED
 
 GREEN = "\033[32m"
 RED = "\033[31m"
 YELLOW = "\033[33m"
 RESET = "\033[0m"
-
-
-def _load_dotenv() -> bool:
-    """Read ./.env into the environment (checker convenience only).
-
-    Values already set in the real environment win — this fills gaps so
-    `wtp-check` works from a fresh shell without a manual `source .env`.
-    The long-running services still get their environment from their
-    supervisor (launchd / systemd / docker env_file).
-    """
-    path = Path(".env")
-    if not path.is_file():
-        return False
-    for line in path.read_text().splitlines():
-        line = line.strip()
-        if not line or line.startswith("#") or "=" not in line:
-            continue
-        key, _, value = line.partition("=")
-        key = key.strip()
-        if key and key not in os.environ:
-            os.environ[key] = value.strip()
-    return True
 
 
 class Report:
@@ -344,7 +325,7 @@ def check_retired_settings(report):
 def main() -> None:
     report = Report()
     print("wtp-check — validating your setup\n")
-    if _load_dotenv():
+    if DOTENV_LOADED:
         print("  (reading .env from the current directory)\n")
 
     senders = check_trusted_senders(report)
