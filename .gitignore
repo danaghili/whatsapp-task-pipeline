@@ -24,3 +24,9 @@ venv/
 .friday/
 .claude/
 CLAUDE.md
+graphify-out/
+docs/TECHNICAL_SOW.md
+docs/DECISIONS.md
+docs/hardening/
+docs/reviews/
+docs/increments/

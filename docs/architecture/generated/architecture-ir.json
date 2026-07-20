@@ -1,0 +1,151 @@
+{
+ "modules": [
+  {
+   "id": "src.listener_example",
+   "path": "src/listener_example.py",
+   "loc": 159
+  },
+  {
+   "id": "src.task_extract",
+   "path": "src/task_extract.py",
+   "loc": 379
+  },
+  {
+   "id": "src.task_reminders",
+   "path": "src/task_reminders.py",
+   "loc": 225
+  }
+ ],
+ "edges": [
+  {
+   "from": "src.listener_example",
+   "to": "src.task_extract",
+   "kind": "import",
+   "line": 32,
+   "deferred": false
+  },
+  {
+   "from": "src.task_reminders",
+   "to": "src.task_extract",
+   "kind": "import",
+   "line": 35,
+   "deferred": false
+  }
+ ],
+ "routes": [],
+ "config_surface": [
+  {
+   "name": "HA_URL",
+   "kind": "env",
+   "module": "src.listener_example",
+   "line": 34
+  },
+  {
+   "name": "HA_TOKEN",
+   "kind": "env",
+   "module": "src.listener_example",
+   "line": 35
+  },
+  {
+   "name": "OLLAMA_CHAT_URL",
+   "kind": "env",
+   "module": "src.task_extract",
+   "line": 40
+  },
+  {
+   "name": "OLLAMA_EMBED_URL",
+   "kind": "env",
+   "module": "src.task_extract",
+   "line": 46
+  },
+  {
+   "name": "CLASSIFIER_MODEL",
+   "kind": "env",
+   "module": "src.task_extract",
+   "line": 48
+  },
+  {
+   "name": "EMBED_MODEL",
+   "kind": "env",
+   "module": "src.task_extract",
+   "line": 49
+  },
+  {
+   "name": "HA_URL",
+   "kind": "env",
+   "module": "src.task_extract",
+   "line": 52
+  },
+  {
+   "name": "HA_TOKEN",
+   "kind": "env",
+   "module": "src.task_extract",
+   "line": 53
+  },
+  {
+   "name": "NOTIFY_SERVICE",
+   "kind": "env",
+   "module": "src.task_extract",
+   "line": 57
+  },
+  {
+   "name": "DEDUP_THRESHOLD",
+   "kind": "env",
+   "module": "src.task_extract",
+   "line": 50
+  },
+  {
+   "name": "TASK_LOG_PATH",
+   "kind": "env",
+   "module": "src.task_extract",
+   "line": 59
+  },
+  {
+   "name": "TRUSTED_SENDERS",
+   "kind": "env",
+   "module": "src.task_extract",
+   "line": 67
+  },
+  {
+   "name": "HA_URL",
+   "kind": "env",
+   "module": "src.task_reminders",
+   "line": 37
+  },
+  {
+   "name": "HA_TOKEN",
+   "kind": "env",
+   "module": "src.task_reminders",
+   "line": 38
+  },
+  {
+   "name": "NOTIFY_SERVICE",
+   "kind": "env",
+   "module": "src.task_reminders",
+   "line": 39
+  },
+  {
+   "name": "REMINDER_CLICK_PATH",
+   "kind": "env",
+   "module": "src.task_reminders",
+   "line": 48
+  },
+  {
+   "name": "TASK_LOG_PATH",
+   "kind": "env",
+   "module": "src.task_reminders",
+   "line": 44
+  },
+  {
+   "name": "TASK_STATE_PATH",
+   "kind": "env",
+   "module": "src.task_reminders",
+   "line": 42
+  }
+ ],
+ "data_models": [],
+ "deploy_topology": [],
+ "unparseable": [],
+ "generated-by": "/friday:reference (tools/doc-synthesis/extract_architecture.py)",
+ "generated-at": "2026-07-20T08:56:32+00:00"
+}
