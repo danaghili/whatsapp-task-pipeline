@@ -120,6 +120,11 @@ def test_unexpected_response_shape_returns_none(monkeypatch, tmp_path):
         ("http://box.home/v1", True),
         ("http://ai.internal/v1", True),
         ("http://mygpubox:11434/v1", True),  # bare single-label = LAN machine
+        ("http://100.125.68.127:11434/v1", True),  # Tailscale CGNAT = own mesh (D-0017)
+        ("http://100.64.0.0/v1", True),  # CGNAT range start
+        ("http://100.127.255.254/v1", True),  # CGNAT range end
+        ("http://100.128.0.1/v1", False),  # just past the CGNAT range
+        ("http://ollama.tail1234.ts.net:11434/v1", True),  # Tailscale MagicDNS
         ("https://api.openai.com/v1", False),
         ("https://openrouter.ai/api/v1", False),
         ("http://172.32.0.1/v1", False),  # just past the RFC1918 172 range

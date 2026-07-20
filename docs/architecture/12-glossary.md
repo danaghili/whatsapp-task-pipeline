@@ -8,7 +8,7 @@
 | Provider layer | `providers.py` — the single seam all AI traffic crosses: universal request style + the cloud guardrail. |
 | Universal (OpenAI-style) format | The HTTP request shape (`/chat/completions`, `/embeddings`) that local servers and cloud providers alike accept: base URL + optional key + model name. |
 | Passthrough (`CHAT_EXTRA_BODY`) | A JSON object merged verbatim into chat requests for provider-specific tuning — e.g. Ollama's `{"think": false}`. Empty by default; empty never breaks anything. |
-| Local endpoint | Loopback, private-network (RFC 1918), link-local, `.local`/`.lan`/`.home`/`.internal`, or single-label hosts. Everything else is non-local and triggers the guardrail. |
+| Local endpoint | Loopback, private-network (RFC 1918), link-local, Tailscale (`100.64.0.0/10`, `*.ts.net` — D-0017), `.local`/`.lan`/`.home`/`.internal`, or single-label hosts. Everything else is non-local and triggers the guardrail. |
 | Cloud acknowledgment (`ACCEPT_CLOUD_TEXT`) | The one-time, deliberate switch without which a non-local AI endpoint refuses to run — the "conscious, never accidental" half of decision D-0002. |
 | Debounce | The 8-second window in which a burst of messages from one sender is joined into a single unit before classification. |
 | De-dup | Embedding-based comparison (cosine ≥ `DEDUP_THRESHOLD`, default 0.80 (D-0016)) of a new task against *open* items only. No embeddings → check off, nothing dropped. |

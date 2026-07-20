@@ -37,7 +37,7 @@ Partner texts you  ─►  is it from a trusted sender?  ─►  your LLM: is th
 - **Confidence-based routing** — clear tasks are added silently; ambiguous ones
   ask you first via an actionable phone notification.
 - **Semantic de-duplication** — embeddings stop "get milk" being added twice,
-  while a re-ask of a *completed* task still comes through.
+  while a re-ask of a _completed_ task still comes through.
 - **Reminder loop** — consolidated nudges on a schedule, quiet overnight,
   escalating when overdue. Ticking the item off is the only "dismiss".
 - **A config checker** (`wtp-check`) that validates your whole setup and names
@@ -45,12 +45,12 @@ Partner texts you  ─►  is it from a trusted sender?  ─►  your LLM: is th
 
 ## What you need
 
-| Prerequisite | Notes |
-|---|---|
-| **Home Assistant** | With a [`todo`](https://www.home-assistant.io/integrations/todo/) list and the Companion app on your phone (for the Accept/Skip buttons). |
-| **A WhatsApp → Home Assistant integration** | **Not provided by this tool** — see step 1. |
-| **An AI to point at** | Local (recommended): [Ollama](https://ollama.com) on any machine on your network. Or any OpenAI-style endpoint, local or cloud. |
-| **Python 3.10+ or Docker** | Either install path works. |
+| Prerequisite                                | Notes                                                                                                                                     |
+| ------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| **Home Assistant**                          | With a [`todo`](https://www.home-assistant.io/integrations/todo/) list and the Companion app on your phone (for the Accept/Skip buttons). |
+| **A WhatsApp → Home Assistant integration** | **Not provided by this tool** — see step 1.                                                                                               |
+| **An AI to point at**                       | Local (recommended): [Ollama](https://ollama.com) on any machine on your network. Or any OpenAI-style endpoint, local or cloud.           |
+| **Python 3.10+ or Docker**                  | Either install path works.                                                                                                                |
 
 ## Setup
 
@@ -61,7 +61,7 @@ hour (most of it in step 1).
 ### Step 1 — the WhatsApp bridge (a prerequisite you install, not part of this tool)
 
 This tool does **not** connect to WhatsApp itself. It listens for a Home
-Assistant *event* that says "a message arrived, from this number, saying this."
+Assistant _event_ that says "a message arrived, from this number, saying this."
 Getting WhatsApp messages into Home Assistant as events is the job of a
 third-party integration you install in your own HA — commonly through
 [HACS](https://hacs.xyz) (the Home Assistant Community Store):
@@ -93,7 +93,8 @@ yourself a test message at the end.
 git clone https://github.com/danaghili/whatsapp-task-pipeline.git
 cd whatsapp-task-pipeline
 
-# Python route:
+# Python route (needs Python 3.10+ — macOS's system python3 may be older;
+# `brew install python@3.11` and use python3.11 below if so):
 python3 -m venv .venv && source .venv/bin/activate
 pip install .
 
@@ -124,9 +125,18 @@ While you're in the file, fill in the rest:
 - `NOTIFY_SERVICE` — your phone's notify service (HA → Developer tools →
   Actions → search `notify.mobile_app`).
 - `TRUSTED_SENDERS` — the allowlist: each sender's number, name, and which
-  to-do list their tasks land on (create the list in HA: Settings → Devices &
-  services → Helpers → Create helper → To-do list). Only these numbers are
-  ever processed.
+  to-do list their tasks land on. Only these numbers are ever processed.
+
+**Creating the to-do list and finding its id** (the `"list"` value):
+
+1. In HA: **Settings → Devices & services → Helpers → Create helper →
+   To-do list**. Name it what you like — e.g. "Tasks Inbox".
+2. HA derives the entity id from the name: "Tasks Inbox" becomes
+   `todo.tasks_inbox`. To see the exact id, open **Developer tools →
+   States** and search `todo.` — copy the id you find there.
+3. Put that id as the sender's `"list"` value in `TRUSTED_SENDERS`. Each
+   sender can have their own list or share one; `wtp-check` confirms every
+   list you reference actually exists.
 
 ### Step 4 — the AI
 
@@ -152,6 +162,12 @@ wtp-check
 (Run every `wtp-*` command from the folder holding your `.env` — they read
 it automatically; anything already set in your shell or by a supervisor
 wins. No `source .env` needed, ever.)
+
+**macOS note:** the first time a freshly installed Python touches your LAN,
+macOS asks for **Local Network** permission — approve it, or connections to
+LAN addresses fail with "No route to host" while `localhost` and Tailscale
+work fine. If you were never asked, grant it under System Settings →
+Privacy & Security → Local Network for your terminal/Python.
 
 Green line per check, red line with the exact fix for anything wrong — the
 Home Assistant connection and token, the notify service, each to-do list, the
@@ -189,7 +205,8 @@ from there. (No messaging set up yet? Smoke-test the classifier directly:
 
 - **Local by default.** With the default configuration, message text reaches
   only your Home Assistant and your own AI endpoints. Nothing leaves your
-  network.
+  network. "Local" includes your Tailscale tailnet (`100.64.0.0/10` and
+  `*.ts.net` names) — your own encrypted mesh is not the cloud.
 - **Logs never hold your words.** By default the log records what happened and
   why — never message or task text — so a log you paste in a forum for help
   can't leak your household's messages. Set `LOG_VERBOSE=true` while debugging
@@ -223,16 +240,16 @@ switches off; tasks are never dropped.
 Everything is environment-driven; [`.env.example`](.env.example) is the full
 annotated list. The knobs you'll most likely touch:
 
-| Variable | Purpose |
-|---|---|
-| `TRUSTED_SENDERS` | JSON map of number → `{name, list}`. The allowlist and routing table. |
-| `CHAT_BASE_URL` / `CHAT_MODEL` / `CHAT_API_KEY` | Which chat AI, where, and (cloud only) its key. |
-| `EMBED_BASE_URL` / `EMBED_MODEL` | De-dup embeddings — independently configurable. |
-| `CHAT_EXTRA_BODY` | Provider-specific tuning passthrough (e.g. Ollama's `{"think": false}`). |
-| `MESSAGE_EVENT` | The HA event your WhatsApp integration fires. |
-| `ACCEPT_CLOUD_TEXT` | The one-time cloud acknowledgment. |
-| `DEDUP_THRESHOLD` | Similarity above which a task counts as a duplicate (default 0.80 — catches re-phrasings). |
-| `LOG_VERBOSE` | Restore full content in logs while debugging. |
+| Variable                                        | Purpose                                                                                    |
+| ----------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| `TRUSTED_SENDERS`                               | JSON map of number → `{name, list}`. The allowlist and routing table.                      |
+| `CHAT_BASE_URL` / `CHAT_MODEL` / `CHAT_API_KEY` | Which chat AI, where, and (cloud only) its key.                                            |
+| `EMBED_BASE_URL` / `EMBED_MODEL`                | De-dup embeddings — independently configurable.                                            |
+| `CHAT_EXTRA_BODY`                               | Provider-specific tuning passthrough (e.g. Ollama's `{"think": false}`).                   |
+| `MESSAGE_EVENT`                                 | The HA event your WhatsApp integration fires.                                              |
+| `ACCEPT_CLOUD_TEXT`                             | The one-time cloud acknowledgment.                                                         |
+| `DEDUP_THRESHOLD`                               | Similarity above which a task counts as a duplicate (default 0.80 — catches re-phrasings). |
+| `LOG_VERBOSE`                                   | Restore full content in logs while debugging.                                              |
 
 Reminder cadence (grace window, ping interval, escalation, quiet hours) lives
 as constants at the top of
@@ -245,7 +262,7 @@ an opinion — and keep every consequence in ordinary code you can read, test an
 log.** The LLM never calls Home Assistant. It returns JSON; deterministic Python
 does the gating, de-dup, routing and the actual writes. Every failure path
 (model unreachable, JSON unparseable, de-dup lookup fails) errs on the side of
-*not silently eating a task* — a duplicate costs one tap; a dropped request
+_not silently eating a task_ — a duplicate costs one tap; a dropped request
 from your partner costs more.
 
 The deeper write-up: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) and the

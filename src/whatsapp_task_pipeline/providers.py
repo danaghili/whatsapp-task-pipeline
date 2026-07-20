@@ -68,7 +68,15 @@ ACCEPT_CLOUD_TEXT = os.environ.get("ACCEPT_CLOUD_TEXT", "")
 # Neutral placeholder used instead of the sender's real name on non-local sends.
 NEUTRAL_SENDER = "a household member"
 
-_LOCAL_SUFFIXES = (".local", ".lan", ".home", ".internal")
+_LOCAL_SUFFIXES = (".local", ".lan", ".home", ".internal", ".ts.net")
+
+# Tailscale hands devices addresses from the CGNAT range (100.64.0.0/10),
+# which Python's is_private does NOT count as private — but a tailnet is the
+# user's own encrypted mesh, not the cloud. Without this, "Ollama on another
+# machine over Tailscale" (a very common self-hosted setup) would hit the
+# cloud guardrail for traffic that never leaves their network (D-0017,
+# found in the real jarvis deployment test).
+_TAILSCALE_NET = ipaddress.ip_network("100.64.0.0/10")
 
 
 class CloudNotAcknowledgedError(RuntimeError):
@@ -103,6 +111,8 @@ def is_local_endpoint(url: str) -> bool:
         return True
     try:
         ip = ipaddress.ip_address(host)
+        if ip.version == 4 and ip in _TAILSCALE_NET:
+            return True  # tailnet (CGNAT range) = the user's own mesh
         return ip.is_loopback or ip.is_private or ip.is_link_local
     except ValueError:
         pass  # not an IP literal — judge the hostname shape
