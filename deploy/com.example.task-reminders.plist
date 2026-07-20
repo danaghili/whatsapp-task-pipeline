@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  launchd agent that runs the reminder cycle every 30 minutes (macOS).
+  The script self-gates to waking hours, so firing unconditionally is fine.
+
+  Install:
+    1. Edit the paths below to point at your checkout and env file.
+    2. cp deploy/com.example.task-reminders.plist ~/Library/LaunchAgents/
+    3. launchctl load ~/Library/LaunchAgents/com.example.task-reminders.plist
+
+  RunAtLoad is false on purpose: a reboot shouldn't fire a spurious reminder the
+  moment the machine comes back (possibly in the middle of the night).
+
+  On Linux, use a systemd timer or cron instead — the script itself is portable.
+-->
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.example.task-reminders</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>/bin/bash</string>
+        <string>-lc</string>
+        <string>source $HOME/path/to/.env; exec /usr/bin/python3 $HOME/path/to/whatsapp-task-pipeline/src/task_reminders.py</string>
+    </array>
+
+    <key>StartInterval</key>
+    <integer>1800</integer>
+
+    <key>RunAtLoad</key>
+    <false/>
+
+    <key>StandardOutPath</key>
+    <string>/tmp/task-reminders.stdout.log</string>
+
+    <key>StandardErrorPath</key>
+    <string>/tmp/task-reminders.stderr.log</string>
+
+    <key>ProcessType</key>
+    <string>Background</string>
+</dict>
+</plist>

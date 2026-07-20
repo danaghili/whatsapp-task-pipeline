@@ -1,0 +1,26 @@
+# Secrets & local config
+.env
+*.env
+!.env.example
+
+# Runtime state & logs (never commit — contains real task text / numbers)
+*_state.json
+*.log
+task_pipeline*.json
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
+
+# Personal tooling (project management / AI-assistant scaffolding — not part of the showcase)
+.friday/
+.claude/
+CLAUDE.md
