@@ -115,13 +115,13 @@ def _dedup_setup(net, similarity):
 
 
 def test_just_above_threshold_is_duplicate_and_skipped(net):
-    _dedup_setup(net, similarity=0.86)  # threshold is 0.85
+    _dedup_setup(net, similarity=task_extract.DEDUP_THRESHOLD + 0.01)
     assert task_extract.handle_message("buy milk", TRUSTED) is True  # engaged, not added
     assert net.calls_to("todo/add_item") == []
 
 
 def test_just_below_threshold_is_added(net):
-    _dedup_setup(net, similarity=0.84)
+    _dedup_setup(net, similarity=task_extract.DEDUP_THRESHOLD - 0.01)
     assert task_extract.handle_message("buy milk", TRUSTED) is True
     assert len(net.calls_to("todo/add_item")) == 1
 

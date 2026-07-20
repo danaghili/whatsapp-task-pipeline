@@ -11,7 +11,7 @@
 | Local endpoint | Loopback, private-network (RFC 1918), link-local, `.local`/`.lan`/`.home`/`.internal`, or single-label hosts. Everything else is non-local and triggers the guardrail. |
 | Cloud acknowledgment (`ACCEPT_CLOUD_TEXT`) | The one-time, deliberate switch without which a non-local AI endpoint refuses to run — the "conscious, never accidental" half of decision D-0002. |
 | Debounce | The 8-second window in which a burst of messages from one sender is joined into a single unit before classification. |
-| De-dup | Embedding-based comparison (cosine ≥ `DEDUP_THRESHOLD`, default 0.85) of a new task against *open* items only. No embeddings → check off, nothing dropped. |
+| De-dup | Embedding-based comparison (cosine ≥ `DEDUP_THRESHOLD`, default 0.80 (D-0016)) of a new task against *open* items only. No embeddings → check off, nothing dropped. |
 | Actionable notification | An HA Companion-app notification carrying Accept/Skip buttons and the full pending task in its payload. |
 | Redacted logging | The default: logs hold flow and errors, never message/task wording (`<redacted N chars>`); `LOG_VERBOSE` restores content locally. |
 | wtp-check | The config checker command: one green/red line per check, plain-language fixes, secrets reported by validity only. |

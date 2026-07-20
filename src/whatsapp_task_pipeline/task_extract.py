@@ -41,7 +41,10 @@ import requests
 # with the cloud guardrail enforced there. See providers.py.
 from . import providers
 
-DEDUP_THRESHOLD = float(os.environ.get("DEDUP_THRESHOLD", "0.85"))
+# 0.80 catches real-world paraphrases ("buy some milk" vs "pick up milk"
+# measures 0.81 on nomic-embed-text) while same-wording re-asks score 0.97+.
+# Measured against the real model in the INC-001 verification run (D-0016).
+DEDUP_THRESHOLD = float(os.environ.get("DEDUP_THRESHOLD", "0.80"))
 
 # Redacted-by-default logging (INC-001 D5, fixes adoption finding F-2): the
 # default log records the flow and errors, never message or task wording — a

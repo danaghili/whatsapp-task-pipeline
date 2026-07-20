@@ -231,7 +231,7 @@ annotated list. The knobs you'll most likely touch:
 | `CHAT_EXTRA_BODY` | Provider-specific tuning passthrough (e.g. Ollama's `{"think": false}`). |
 | `MESSAGE_EVENT` | The HA event your WhatsApp integration fires. |
 | `ACCEPT_CLOUD_TEXT` | The one-time cloud acknowledgment. |
-| `DEDUP_THRESHOLD` | Similarity above which a task counts as a duplicate (default 0.85). |
+| `DEDUP_THRESHOLD` | Similarity above which a task counts as a duplicate (default 0.80 — catches re-phrasings). |
 | `LOG_VERBOSE` | Restore full content in logs while debugging. |
 
 Reminder cadence (grace window, ping interval, escalation, quiet hours) lives
