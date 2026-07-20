@@ -71,7 +71,9 @@ def classification(is_task, confidence, tasks):
 @pytest.fixture
 def net(monkeypatch, tmp_path):
     """A wired FakeNetwork patched into task_extract, with safe env."""
-    from whatsapp_task_pipeline import providers, task_extract
+    from pathlib import Path
+
+    from whatsapp_task_pipeline import actions, providers, task_extract
 
     fake = FakeNetwork()
     # Both network seams are faked: HA calls leave via task_extract's requests,
@@ -81,6 +83,8 @@ def net(monkeypatch, tmp_path):
     monkeypatch.setattr(task_extract, "HA_TOKEN", "test-token")
     monkeypatch.setattr(task_extract, "LOG_PATH", str(tmp_path / "test.log"))
     monkeypatch.setattr(providers, "LOG_PATH", str(tmp_path / "test.log"))
+    # Keep the pending store out of the real home directory during tests.
+    monkeypatch.setattr(actions, "PENDING_PATH", Path(tmp_path / "pending.json"))
     monkeypatch.setenv(
         "TRUSTED_SENDERS",
         json.dumps({"441234567890": {"name": "Partner", "list": "todo.tasks_inbox"}}),

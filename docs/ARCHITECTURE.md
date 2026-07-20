@@ -11,13 +11,16 @@ Python, and a box running local models); they can equally be one.
 ```
  Home Assistant                     Application host                  Model host (Ollama)
 ┌──────────────────────┐          ┌───────────────────────────┐    ┌──────────────────┐
-│ message bridge        │  event  │ listener_example.py       │    │ chat model       │
+│ message bridge        │  event  │ listener.py               │    │ chat model       │
 │  └─ emits event       │ ──────► │  └─ debounce + handler    │ ─► │ (classifier)     │
 │                       │  (WS)   │     chain                 │    └──────────────────┘
 │ todo.tasks_inbox      │  REST   │     └─ task_extract.py    │    ┌──────────────────┐
-│ notify.mobile_app_*   │ ◄────── │                           │ ─► │ embedding model  │
-│ automation            │         │ task_reminders.py         │    │ (de-duplication) │
-│  (Accept/Skip router) │         │  (scheduler, every 30m)   │    └──────────────────┘
+│ notify.mobile_app_*   │ ◄────── │        + actions.py       │ ─► │ embedding model  │
+│                       │         │                           │    │ (de-duplication) │
+│ notification-action   │  event  │ (Accept/Skip resolved     │    └──────────────────┘
+│  (Accept/Skip tap)    │ ──────► │  in the listener by tid)  │
+│                       │  (WS)   │ task_reminders.py         │
+│                       │         │  (scheduler, every 30m)   │
 └──────────────────────┘          └───────────────────────────┘
 ```
 
@@ -101,18 +104,17 @@ clear prompt the model is very well-behaved, and the logs would show
 
 **High confidence** → de-duplicate → `POST todo/add_item`.
 
-**Medium confidence** → an actionable notification. This is the neat part. The
-code mints a random task id and embeds it in the action names
-(`ACCEPT_TASK_<tid>`), with the full task payload carried in the notification's
-`data`. Tapping a button makes the Companion app fire a
-`mobile_app_notification_action` event back into Home Assistant; a small
-automation pattern-matches the prefix and performs the add (Accept) or a logged
-no-op (Skip).
+**Medium confidence** → an actionable notification. The code mints a random task
+id (`tid`), **stages the full task in a small pending store keyed by that tid**,
+and sends a notification whose Accept/Skip buttons carry the tid in their action
+strings (`ACCEPT_TASK_<tid>`). Tapping a button makes the Companion app fire a
+`mobile_app_notification_action` event; the listener receives it, reads the tid
+back out of the action string, resolves it against the pending store, and does
+the add (Accept) or a logged no-op (Skip) itself. See the "Accept/Skip" section
+below for why this is handled tool-side rather than by an HA automation.
 
-The consequence worth noticing: **the pending decision lives entirely inside the
-notification.** The application host doesn't hold any "awaiting answer" state; it
-can restart freely. Body-tapping the notification deep-links to the sender's chat
-so the original message can be read before deciding.
+Body-tapping the notification deep-links to the sender's chat so the original
+message can be read before deciding.
 
 ### 6. De-duplication
 
@@ -131,6 +133,53 @@ Two details matter:
 
 If de-dup fails for any reason it reports "not a duplicate" and the task is added
 anyway — a duplicate costs one tap, a dropped task costs more.
+
+## Accept/Skip: why the tool handles it, not an HA automation
+
+The obvious way to route the Accept/Skip buttons is a Home Assistant automation
+that reads the task out of the notification's `data` on the
+`mobile_app_notification_action` event. That does not work — and fails
+*silently*, which is worse than failing loudly.
+
+The **Android Companion app returns only a fixed set of fields** on that event.
+A raw capture of a real tap (Pixel):
+
+```
+action, action_1_key, action_1_title, action_2_key, action_2_title,
+clickAction, device_id, message, server_id, tag, title, webhook_id
+```
+
+Any custom payload attached to the notification — a nested object *or* flat
+top-level keys — is **absent**. An automation reading
+`trigger.event.data.<custom>.text` therefore gets an empty string, its
+"length > 0" guard fails, and it adds nothing while looking like it worked. (An
+earlier design shipped exactly this bug; it only surfaced under a real-device
+test, because the high-confidence direct-add path masks it day to day.)
+
+The one field we fully control that reliably round-trips is the **action
+string**, which carries the tid. So the flow is:
+
+1. On send, `_send_actionable` **stages** the full task (`text`, `due_hint`,
+   `sender`, `entity_id`) in a small on-disk pending store keyed by `tid`
+   (`actions.py`), *before* posting the notification — so an instant tap can't
+   race the write.
+2. The notification carries no custom data — just title, message, tag, the two
+   action buttons (each with the tid), and the `clickAction` deep-link.
+3. On tap, the **listener** receives `mobile_app_notification_action`, reads the
+   tid from the action string, and `actions.handle_action` pops the staged task
+   and performs the add (Accept) or logs the dismissal (Skip).
+
+Properties this buys:
+
+- **It works**, on Android and iOS, with no custom-payload round-trip.
+- **Multi-list**: the staged entry remembers which sender's list to use — a
+  single hard-coded automation couldn't.
+- **Idempotent**: the store entry is popped before the add, so a duplicate event
+  delivery can't add twice.
+- **Survives a restart** between send and tap (the store is on disk, atomic
+  write). The one real limitation: the listener must be running *at the moment
+  of the tap* to receive the event — fine for a long-lived daemon, and the
+  reason the pending store also has a TTL so never-tapped entries are pruned.
 
 ## The reminder loop
 
@@ -157,13 +206,13 @@ trigger a nudge). Each cycle:
 | State | Owner | Why it's there |
 |---|---|---|
 | What tasks exist | Home Assistant to-do list | The user already manages it; it survives everything else restarting. |
-| A pending Accept/Skip | The phone notification payload | No server-side "awaiting answer" to persist or lose. |
+| A pending Accept/Skip | The listener's pending store (keyed by tid) | Only the tid round-trips from the phone; the store holds the rest. Atomic write survives a restart. |
 | Ping timing | Reminder daemon's sidecar JSON | Pure derived metadata; safe to rebuild from the list. |
 | The opinion "is this a task?" | Nowhere — recomputed per message | The model is stateless; no memory to corrupt. |
 
 Because no single component is authoritative for more than its own slice, any of
 them can die and restart without data loss: the listener reconnects, the daemon
-re-reads the list, the notification waits on the phone.
+re-reads the list, the pending store is on disk.
 
 ## Failure modes, by design
 
@@ -173,7 +222,8 @@ re-reads the list, the notification waits on the phone.
 | JSON won't parse | Treated as low confidence → no action; raw reply logged. |
 | De-dup fetch / embed fails | Skip de-dup, add anyway (missing a task is worse than a dupe). |
 | HA add fails | Logged; the reminder loop never invents tasks, so nothing is fabricated. |
-| Listener crashes | Supervisor restarts it; subscription re-established, no state lost. |
+| Listener crashes | Supervisor restarts it; both subscriptions re-established, pending store on disk. |
+| Listener down at the moment of a tap | The action event is missed (not queued) — the only real gap; keep the listener supervised. The staged entry is later pruned by TTL. |
 | Host reboots at night | Reminder job's `RunAtLoad=false` + quiet-hours gate = no 3 a.m. nudge. |
 
 ## What I'd reach for next
