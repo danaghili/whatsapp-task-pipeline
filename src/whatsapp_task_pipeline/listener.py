@@ -28,14 +28,20 @@ import sys
 
 import websockets
 
-sys.path.insert(0, os.path.dirname(__file__))
-from task_extract import handle_message as handle_task_message
+from . import providers
+from .task_extract import handle_message as handle_task_message
+from .task_extract import _redact
 
 HA_URL = os.environ.get("HA_URL", "http://homeassistant.local:8123")
 HA_TOKEN = os.environ.get("HA_TOKEN", "")
 
 WS_URL = HA_URL.replace("http://", "ws://").replace("https://", "wss://") + "/api/websocket"
 RECONNECT_DELAY = 10
+
+# The Home Assistant event this listener subscribes to. WhatsApp bridge
+# integrations differ in what they fire — set MESSAGE_EVENT to match yours
+# (see README: "Step 1 — the WhatsApp bridge").
+MESSAGE_EVENT = os.environ.get("MESSAGE_EVENT", "whatsapp_message_received")
 
 # Debounce: collect a burst of messages from the same sender into one unit
 # before handing off, so "get milk" / "and bread" / "oh and stamps" are
@@ -53,7 +59,9 @@ async def _flush_debounced(sender_number: str):
         return
 
     combined = "\n".join(messages)
-    print(f"[debounce] {len(messages)} msg(s) from {sender_number}: {combined[:80]!r}", flush=True)
+    # Message content is redacted by default (LOG_VERBOSE restores it) — the
+    # process log must not hold household words a stranger could paste (F-2).
+    print(f"[debounce] {len(messages)} msg(s) from {sender_number}: {_redact(combined[:80])}", flush=True)
 
     # The handler chain. Each handler is isolated: an exception in one must not
     # stop the others. Add more handlers here — order matters only if a handler
@@ -115,12 +123,12 @@ async def listen():
                 await ws.send(json.dumps({
                     "id": 1,
                     "type": "subscribe_events",
-                    "event_type": "whatsapp_message_received",
+                    "event_type": MESSAGE_EVENT,
                 }))
                 if not json.loads(await ws.recv()).get("success"):
                     await asyncio.sleep(RECONNECT_DELAY)
                     continue
-                print("Subscribed to whatsapp_message_received.", flush=True)
+                print(f"Subscribed to {MESSAGE_EVENT}.", flush=True)
 
                 async for raw in ws:
                     msg = json.loads(raw)
@@ -138,6 +146,15 @@ async def listen():
 def main():
     if not HA_TOKEN:
         print("Error: HA_TOKEN not set.", file=sys.stderr)
+        sys.exit(1)
+    try:
+        # Cloud guardrail (INC-001 FR-1.4): if any AI endpoint is non-local
+        # and the operator hasn't set ACCEPT_CLOUD_TEXT, refuse to start —
+        # before a single message could be classified off-host. With the
+        # switch set this prints one warning line naming each destination.
+        providers.enforce_startup_policy()
+    except providers.CloudNotAcknowledgedError as e:
+        print(f"Error: {e}", file=sys.stderr)
         sys.exit(1)
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)

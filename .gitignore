@@ -30,3 +30,5 @@ docs/DECISIONS.md
 docs/hardening/
 docs/reviews/
 docs/increments/
+build/
+dist/

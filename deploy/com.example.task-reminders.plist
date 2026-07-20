@@ -4,14 +4,17 @@
   The script self-gates to waking hours, so firing unconditionally is fine.
 
   Install:
-    1. Edit the paths below to point at your checkout and env file.
+    1. Edit the two paths below: your .env location and the wtp-remind
+       command from the virtualenv you installed the tool into
+       (e.g. $HOME/whatsapp-task-pipeline/.venv/bin/wtp-remind).
     2. cp deploy/com.example.task-reminders.plist ~/Library/LaunchAgents/
     3. launchctl load ~/Library/LaunchAgents/com.example.task-reminders.plist
 
   RunAtLoad is false on purpose: a reboot shouldn't fire a spurious reminder the
   moment the machine comes back (possibly in the middle of the night).
 
-  On Linux, use a systemd timer or cron instead — the script itself is portable.
+  On Linux, use a systemd timer or cron instead — or skip this entirely and use
+  docker compose, whose reminders service runs the same 30-minute cycle.
 -->
 <plist version="1.0">
 <dict>
@@ -22,7 +25,7 @@
     <array>
         <string>/bin/bash</string>
         <string>-lc</string>
-        <string>source $HOME/path/to/.env; exec /usr/bin/python3 $HOME/path/to/whatsapp-task-pipeline/src/task_reminders.py</string>
+        <string>set -a; source $HOME/path/to/.env; set +a; exec $HOME/path/to/.venv/bin/wtp-remind</string>
     </array>
 
     <key>StartInterval</key>

@@ -1,0 +1,59 @@
+# whatsapp-task-pipeline — ready-to-run container setup (INC-001 FR-1.8 / D6).
+#
+# Runs the two long-lived pieces of the pipeline. Home Assistant and the AI
+# server stay OUTSIDE this file on purpose: HA is something you already run,
+# and bundling an AI server is heavy (often needing GPU plumbing) — an
+# optional CPU-only block is commented at the bottom for the curious.
+#
+# Setup:
+#   1. cp .env.example .env   and fill it in (see README).
+#   2. IMPORTANT — addresses from inside a container:
+#      "localhost" inside a container is the container itself, not your
+#      machine. If Ollama runs on this same machine, set in .env:
+#          CHAT_BASE_URL=http://host.docker.internal:11434/v1
+#          EMBED_BASE_URL=http://host.docker.internal:11434/v1
+#      And if your HA_URL uses a .local name that containers can't resolve,
+#      use its IP address instead (e.g. http://192.168.1.10:8123).
+#   3. docker compose run --rm listener wtp-check     (validate first)
+#   4. docker compose up -d
+#
+# Every value here is a placeholder pattern — real numbers, tokens, and hosts
+# live only in your local .env, which stays out of the image and the repo.
+
+services:
+  listener:
+    build: .
+    env_file: .env
+    restart: unless-stopped
+    # Lets host.docker.internal reach your machine on Linux too (it works
+    # out of the box on Docker Desktop for Mac/Windows).
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  reminders:
+    build: .
+    env_file: .env
+    restart: unless-stopped
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    # The reminder script is built to be fired unconditionally on a schedule
+    # and to self-gate to waking hours — so a simple 30-minute loop is the
+    # whole scheduler (same cadence as the launchd template in deploy/).
+    entrypoint: ["/bin/sh", "-c", "while true; do wtp-remind || true; sleep 1800; done"]
+
+# --- Optional: a CPU-only AI server in the same setup ------------------------
+# Uncomment to run Ollama here instead of on the host. CPU inference is slow
+# for chat models — fine for trying things out, not for daily use. Then set
+# in .env:  CHAT_BASE_URL=http://ollama:11434/v1
+#           EMBED_BASE_URL=http://ollama:11434/v1
+# and pull your models once:  docker compose exec ollama ollama pull qwen3:4b
+#                             docker compose exec ollama ollama pull nomic-embed-text
+#
+#  ollama:
+#    image: ollama/ollama
+#    restart: unless-stopped
+#    volumes:
+#      - ollama-models:/root/.ollama
+#
+# volumes:
+#   ollama-models:

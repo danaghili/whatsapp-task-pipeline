@@ -36,18 +36,18 @@ import requests
 
 # --- Configuration (all via environment; see .env.example) -------------------
 
-# Chat model endpoint. Any OpenAI-ish Ollama server with a chat model pulled.
-OLLAMA_CHAT_URL = os.environ.get("OLLAMA_CHAT_URL", "http://localhost:11434")
+# All AI traffic (chat classification + de-dup embeddings) goes through the
+# provider layer — one universal request style for local and cloud endpoints,
+# with the cloud guardrail enforced there. See providers.py.
+from . import providers
 
-# Embeddings endpoint. NOTE: this must point at an Ollama instance that actually
-# has the embedding model pulled. A chat-only server will 404 /api/embeddings —
-# a failure mode that is silent unless you check the logs, so keep them separate
-# and explicit if your chat and embed models live on different hosts.
-OLLAMA_EMBED_URL = os.environ.get("OLLAMA_EMBED_URL", "http://localhost:11434")
-
-CLASSIFIER_MODEL = os.environ.get("CLASSIFIER_MODEL", "qwen3:32b")
-EMBED_MODEL = os.environ.get("EMBED_MODEL", "nomic-embed-text")
 DEDUP_THRESHOLD = float(os.environ.get("DEDUP_THRESHOLD", "0.85"))
+
+# Redacted-by-default logging (INC-001 D5, fixes adoption finding F-2): the
+# default log records the flow and errors, never message or task wording — a
+# log a stranger shares for help can't leak their household's words. Setting
+# LOG_VERBOSE=true restores full content for local debugging.
+LOG_VERBOSE = os.environ.get("LOG_VERBOSE", "").strip().lower() in ("1", "true", "yes")
 
 HA_URL = os.environ.get("HA_URL", "http://homeassistant.local:8123")
 HA_TOKEN = os.environ.get("HA_TOKEN", "")
@@ -109,6 +109,18 @@ def _log(line: str) -> None:
         pass
 
 
+def _redact(content: str) -> str:
+    """Message/task wording as it may appear in the log.
+
+    Full content only under LOG_VERBOSE; by default just an honest length
+    marker, so the log still shows THAT something happened and how big it
+    was, without holding the household's words (INC-001 FR-1.6).
+    """
+    if LOG_VERBOSE:
+        return repr(content)
+    return f"<redacted {len(content)} chars>"
+
+
 def _extract_json(text: str) -> Optional[dict]:
     """Recover a JSON object from a possibly-chatty model reply.
 
@@ -127,43 +139,23 @@ def _extract_json(text: str) -> Optional[dict]:
 
 
 def _classify(message: str, sender_name: str) -> Optional[dict]:
-    payload = {
-        "model": CLASSIFIER_MODEL,
-        "messages": [
-            {"role": "user", "content": PROMPT.format(sender_name=sender_name, message=message)}
-        ],
-        "stream": False,
-        # Reasoning/"think" mode measurably hurts small local models on
-        # short structured-output tasks; keep it off. temperature 0 for
-        # determinism.
-        "think": False,
-        "options": {"temperature": 0.0},
-    }
-    try:
-        r = requests.post(f"{OLLAMA_CHAT_URL}/api/chat", json=payload, timeout=60)
-        r.raise_for_status()
-    except requests.RequestException as e:
-        _log(f"[classify] ollama unreachable: {e}")
+    # The name the model sees: real for local endpoints, a neutral placeholder
+    # when chat is non-local — the guardrail strips the structured "who"
+    # (INC-001 D2). Determinism (temperature 0) and the Ollama think-off
+    # tuning both live in the provider layer / its passthrough.
+    visible_name = providers.outbound_sender_name(sender_name)
+    raw = providers.chat(PROMPT.format(sender_name=visible_name, message=message))
+    if raw is None:
+        _log("[classify] chat provider unavailable — safe skip")
         return None
-    raw = r.json().get("message", {}).get("content", "")
     parsed = _extract_json(raw)
     if not parsed:
-        _log(f"[classify] json parse fail; raw={raw[:200]!r}")
+        _log(f"[classify] json parse fail; raw={_redact(raw[:200])}")
     return parsed
 
 
 def _embed(text: str) -> Optional[list]:
-    try:
-        r = requests.post(
-            f"{OLLAMA_EMBED_URL}/api/embeddings",
-            json={"model": EMBED_MODEL, "prompt": text},
-            timeout=20,
-        )
-        r.raise_for_status()
-        return r.json().get("embedding")
-    except requests.RequestException as e:
-        _log(f"[embed] error: {e}")
-        return None
+    return providers.embed(text)
 
 
 def _cosine(a: list, b: list) -> float:
@@ -247,7 +239,7 @@ def _add_todo(entity_id: str, text: str, due_hint: Optional[str], sender_name: s
             timeout=10,
         )
         r.raise_for_status()
-        _log(f"[add] {entity_id} += {item!r}")
+        _log(f"[add] {entity_id} += {_redact(item)}")
         return True
     except requests.RequestException as e:
         _log(f"[add] failed: {e}")
@@ -307,7 +299,7 @@ def _send_actionable(
             timeout=10,
         )
         r.raise_for_status()
-        _log(f"[actionable] tid={tid} text={text!r}")
+        _log(f"[actionable] tid={tid} text={_redact(text)}")
         return True
     except requests.RequestException as e:
         _log(f"[actionable] failed: {e}")
@@ -354,7 +346,7 @@ def handle_message(combined_text: str, sender_number: str) -> bool:
         if confidence == "high":
             dup, sim, dup_uid = _is_duplicate(text, entity_id)
             if dup:
-                _log(f"[dedup] sim={sim:.2f} matched={dup_uid} skipping {text!r}")
+                _log(f"[dedup] sim={sim:.2f} matched={dup_uid} skipping {_redact(text)}")
                 routed_any = True  # we engaged; just didn't add
                 continue
             if _add_todo(entity_id, text, due_hint, sender_name):
@@ -366,13 +358,25 @@ def handle_message(combined_text: str, sender_number: str) -> bool:
     return routed_any
 
 
-if __name__ == "__main__":
+def main() -> None:
+    """CLI smoke entry: classify one message as if it just arrived."""
     import sys
 
     if len(sys.argv) < 3:
-        print("Usage: task_extract.py <sender_number> <message...>", file=sys.stderr)
+        print("Usage: wtp-classify <sender_number> <message...>", file=sys.stderr)
+        sys.exit(1)
+    try:
+        # The cloud guardrail applies to every AI-calling process (INC-001
+        # FR-1.4): refuse before any request could leave the network.
+        providers.enforce_startup_policy()
+    except providers.CloudNotAcknowledgedError as e:
+        print(f"Error: {e}", file=sys.stderr)
         sys.exit(1)
     sender = sys.argv[1]
     text = " ".join(sys.argv[2:])
     routed = handle_message(text, sender)
     print(f"routed={routed}")
+
+
+if __name__ == "__main__":
+    main()

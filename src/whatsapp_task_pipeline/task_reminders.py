@@ -31,8 +31,7 @@ from pathlib import Path
 
 import requests
 
-sys.path.insert(0, os.path.dirname(__file__))
-from task_extract import _load_trusted_senders, _get_open_todos  # noqa: E402
+from .task_extract import _load_trusted_senders, _get_open_todos
 
 HA_URL = os.environ.get("HA_URL", "http://homeassistant.local:8123")
 HA_TOKEN = os.environ.get("HA_TOKEN", "")

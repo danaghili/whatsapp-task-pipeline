@@ -5,7 +5,7 @@ from the extracted code structure. Descriptive sections are grounded in
 [the generated IR](generated/architecture-ir.json); rationale is cited to real
 artifacts or honestly marked "Rationale not captured".
 
-**Last-verified:** 2026-07-20
+**Last-verified:** 2026-07-20 (re-synthesized at the close of INC-001)
 **Record-status:** verified
 
 | Section | File |

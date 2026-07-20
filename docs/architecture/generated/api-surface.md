@@ -9,22 +9,40 @@
 
 ## Config surface (env)
 
-- `HA_URL` — read in `src.listener_example:34`
-- `HA_TOKEN` — read in `src.listener_example:35`
-- `OLLAMA_CHAT_URL` — read in `src.task_extract:40`
-- `OLLAMA_EMBED_URL` — read in `src.task_extract:46`
-- `CLASSIFIER_MODEL` — read in `src.task_extract:48`
-- `EMBED_MODEL` — read in `src.task_extract:49`
-- `HA_URL` — read in `src.task_extract:52`
-- `HA_TOKEN` — read in `src.task_extract:53`
-- `NOTIFY_SERVICE` — read in `src.task_extract:57`
-- `DEDUP_THRESHOLD` — read in `src.task_extract:50`
-- `TASK_LOG_PATH` — read in `src.task_extract:59`
-- `TRUSTED_SENDERS` — read in `src.task_extract:67`
-- `HA_URL` — read in `src.task_reminders:37`
-- `HA_TOKEN` — read in `src.task_reminders:38`
-- `NOTIFY_SERVICE` — read in `src.task_reminders:39`
-- `REMINDER_CLICK_PATH` — read in `src.task_reminders:48`
-- `TASK_LOG_PATH` — read in `src.task_reminders:44`
-- `TASK_STATE_PATH` — read in `src.task_reminders:42`
+- `HA_TOKEN` — read in `src.whatsapp_task_pipeline.check:111`
+- `NOTIFY_SERVICE` — read in `src.whatsapp_task_pipeline.check:148`
+- `TRUSTED_SENDERS` — read in `src.whatsapp_task_pipeline.check:84`
+- `HA_URL` — read in `src.whatsapp_task_pipeline.check:110`
+- `HA_URL` — read in `src.whatsapp_task_pipeline.listener:35`
+- `HA_TOKEN` — read in `src.whatsapp_task_pipeline.listener:36`
+- `MESSAGE_EVENT` — read in `src.whatsapp_task_pipeline.listener:44`
+- `CHAT_API_KEY` — read in `src.whatsapp_task_pipeline.providers:51`
+- `CHAT_MODEL` — read in `src.whatsapp_task_pipeline.providers:52`
+- `EMBED_API_KEY` — read in `src.whatsapp_task_pipeline.providers:55`
+- `EMBED_MODEL` — read in `src.whatsapp_task_pipeline.providers:56`
+- `CHAT_EXTRA_BODY` — read in `src.whatsapp_task_pipeline.providers:61`
+- `ACCEPT_CLOUD_TEXT` — read in `src.whatsapp_task_pipeline.providers:66`
+- `TASK_LOG_PATH` — read in `src.whatsapp_task_pipeline.providers:189`
+- `CHAT_BASE_URL` — read in `src.whatsapp_task_pipeline.providers:50`
+- `EMBED_BASE_URL` — read in `src.whatsapp_task_pipeline.providers:54`
+- `HA_URL` — read in `src.whatsapp_task_pipeline.task_extract:52`
+- `HA_TOKEN` — read in `src.whatsapp_task_pipeline.task_extract:53`
+- `NOTIFY_SERVICE` — read in `src.whatsapp_task_pipeline.task_extract:57`
+- `DEDUP_THRESHOLD` — read in `src.whatsapp_task_pipeline.task_extract:44`
+- `TASK_LOG_PATH` — read in `src.whatsapp_task_pipeline.task_extract:59`
+- `TRUSTED_SENDERS` — read in `src.whatsapp_task_pipeline.task_extract:67`
+- `LOG_VERBOSE` — read in `src.whatsapp_task_pipeline.task_extract:50`
+- `HA_URL` — read in `src.whatsapp_task_pipeline.task_reminders:36`
+- `HA_TOKEN` — read in `src.whatsapp_task_pipeline.task_reminders:37`
+- `NOTIFY_SERVICE` — read in `src.whatsapp_task_pipeline.task_reminders:38`
+- `REMINDER_CLICK_PATH` — read in `src.whatsapp_task_pipeline.task_reminders:47`
+- `TASK_LOG_PATH` — read in `src.whatsapp_task_pipeline.task_reminders:43`
+- `TASK_STATE_PATH` — read in `src.whatsapp_task_pipeline.task_reminders:41`
+- `WTP_TEST_CHAT_MODEL` — read in `tests.test_real_roundtrip:27`
+- `WTP_REAL_TESTS` — read in `tests.test_real_roundtrip:23`
+
+## Deploy topology
+
+- container: `Dockerfile` — present
+- container: `docker-compose.yml` — present
 

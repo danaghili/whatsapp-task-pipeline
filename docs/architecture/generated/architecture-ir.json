@@ -1,151 +1,334 @@
 {
  "modules": [
   {
-   "id": "src.listener_example",
-   "path": "src/listener_example.py",
-   "loc": 159
+   "id": "src.whatsapp_task_pipeline.__init__",
+   "path": "src/whatsapp_task_pipeline/__init__.py",
+   "loc": 11
   },
   {
-   "id": "src.task_extract",
-   "path": "src/task_extract.py",
-   "loc": 379
+   "id": "src.whatsapp_task_pipeline.check",
+   "path": "src/whatsapp_task_pipeline/check.py",
+   "loc": 369
   },
   {
-   "id": "src.task_reminders",
-   "path": "src/task_reminders.py",
-   "loc": 225
+   "id": "src.whatsapp_task_pipeline.listener",
+   "path": "src/whatsapp_task_pipeline/listener.py",
+   "loc": 176
+  },
+  {
+   "id": "src.whatsapp_task_pipeline.providers",
+   "path": "src/whatsapp_task_pipeline/providers.py",
+   "loc": 252
+  },
+  {
+   "id": "src.whatsapp_task_pipeline.task_extract",
+   "path": "src/whatsapp_task_pipeline/task_extract.py",
+   "loc": 383
+  },
+  {
+   "id": "src.whatsapp_task_pipeline.task_reminders",
+   "path": "src/whatsapp_task_pipeline/task_reminders.py",
+   "loc": 224
+  },
+  {
+   "id": "tests.conftest",
+   "path": "tests/conftest.py",
+   "loc": 89
+  },
+  {
+   "id": "tests.test_checker",
+   "path": "tests/test_checker.py",
+   "loc": 175
+  },
+  {
+   "id": "tests.test_providers",
+   "path": "tests/test_providers.py",
+   "loc": 174
+  },
+  {
+   "id": "tests.test_real_roundtrip",
+   "path": "tests/test_real_roundtrip.py",
+   "loc": 248
+  },
+  {
+   "id": "tests.test_redaction",
+   "path": "tests/test_redaction.py",
+   "loc": 44
+  },
+  {
+   "id": "tests.test_routing_core",
+   "path": "tests/test_routing_core.py",
+   "loc": 184
   }
  ],
  "edges": [
   {
-   "from": "src.listener_example",
-   "to": "src.task_extract",
+   "from": "src.whatsapp_task_pipeline.check",
+   "to": "src.whatsapp_task_pipeline.providers",
+   "kind": "import",
+   "line": 211,
+   "deferred": true
+  },
+  {
+   "from": "src.whatsapp_task_pipeline.listener",
+   "to": "src.whatsapp_task_pipeline.providers",
+   "kind": "import",
+   "line": 31,
+   "deferred": false
+  },
+  {
+   "from": "src.whatsapp_task_pipeline.listener",
+   "to": "src.whatsapp_task_pipeline.task_extract",
    "kind": "import",
    "line": 32,
    "deferred": false
   },
   {
-   "from": "src.task_reminders",
-   "to": "src.task_extract",
+   "from": "src.whatsapp_task_pipeline.task_extract",
+   "to": "src.whatsapp_task_pipeline.providers",
    "kind": "import",
-   "line": 35,
+   "line": 42,
+   "deferred": false
+  },
+  {
+   "from": "src.whatsapp_task_pipeline.task_reminders",
+   "to": "src.whatsapp_task_pipeline.task_extract",
+   "kind": "import",
+   "line": 34,
+   "deferred": false
+  },
+  {
+   "from": "tests.test_checker",
+   "to": "tests.conftest",
+   "kind": "import",
+   "line": 14,
+   "deferred": false
+  },
+  {
+   "from": "tests.test_providers",
+   "to": "tests.conftest",
+   "kind": "import",
+   "line": 13,
+   "deferred": false
+  },
+  {
+   "from": "tests.test_redaction",
+   "to": "tests.conftest",
+   "kind": "import",
+   "line": 11,
+   "deferred": false
+  },
+  {
+   "from": "tests.test_routing_core",
+   "to": "tests.conftest",
+   "kind": "import",
+   "line": 15,
    "deferred": false
   }
  ],
  "routes": [],
  "config_surface": [
   {
+   "name": "HA_TOKEN",
+   "kind": "env",
+   "module": "src.whatsapp_task_pipeline.check",
+   "line": 111
+  },
+  {
+   "name": "NOTIFY_SERVICE",
+   "kind": "env",
+   "module": "src.whatsapp_task_pipeline.check",
+   "line": 148
+  },
+  {
+   "name": "TRUSTED_SENDERS",
+   "kind": "env",
+   "module": "src.whatsapp_task_pipeline.check",
+   "line": 84
+  },
+  {
    "name": "HA_URL",
    "kind": "env",
-   "module": "src.listener_example",
-   "line": 34
+   "module": "src.whatsapp_task_pipeline.check",
+   "line": 110
+  },
+  {
+   "name": "HA_URL",
+   "kind": "env",
+   "module": "src.whatsapp_task_pipeline.listener",
+   "line": 35
   },
   {
    "name": "HA_TOKEN",
    "kind": "env",
-   "module": "src.listener_example",
-   "line": 35
+   "module": "src.whatsapp_task_pipeline.listener",
+   "line": 36
   },
   {
-   "name": "OLLAMA_CHAT_URL",
+   "name": "MESSAGE_EVENT",
    "kind": "env",
-   "module": "src.task_extract",
-   "line": 40
+   "module": "src.whatsapp_task_pipeline.listener",
+   "line": 44
   },
   {
-   "name": "OLLAMA_EMBED_URL",
+   "name": "CHAT_API_KEY",
    "kind": "env",
-   "module": "src.task_extract",
-   "line": 46
+   "module": "src.whatsapp_task_pipeline.providers",
+   "line": 51
   },
   {
-   "name": "CLASSIFIER_MODEL",
+   "name": "CHAT_MODEL",
    "kind": "env",
-   "module": "src.task_extract",
-   "line": 48
+   "module": "src.whatsapp_task_pipeline.providers",
+   "line": 52
+  },
+  {
+   "name": "EMBED_API_KEY",
+   "kind": "env",
+   "module": "src.whatsapp_task_pipeline.providers",
+   "line": 55
   },
   {
    "name": "EMBED_MODEL",
    "kind": "env",
-   "module": "src.task_extract",
-   "line": 49
+   "module": "src.whatsapp_task_pipeline.providers",
+   "line": 56
+  },
+  {
+   "name": "CHAT_EXTRA_BODY",
+   "kind": "env",
+   "module": "src.whatsapp_task_pipeline.providers",
+   "line": 61
+  },
+  {
+   "name": "ACCEPT_CLOUD_TEXT",
+   "kind": "env",
+   "module": "src.whatsapp_task_pipeline.providers",
+   "line": 66
+  },
+  {
+   "name": "TASK_LOG_PATH",
+   "kind": "env",
+   "module": "src.whatsapp_task_pipeline.providers",
+   "line": 189
+  },
+  {
+   "name": "CHAT_BASE_URL",
+   "kind": "env",
+   "module": "src.whatsapp_task_pipeline.providers",
+   "line": 50
+  },
+  {
+   "name": "EMBED_BASE_URL",
+   "kind": "env",
+   "module": "src.whatsapp_task_pipeline.providers",
+   "line": 54
   },
   {
    "name": "HA_URL",
    "kind": "env",
-   "module": "src.task_extract",
+   "module": "src.whatsapp_task_pipeline.task_extract",
    "line": 52
   },
   {
    "name": "HA_TOKEN",
    "kind": "env",
-   "module": "src.task_extract",
+   "module": "src.whatsapp_task_pipeline.task_extract",
    "line": 53
   },
   {
    "name": "NOTIFY_SERVICE",
    "kind": "env",
-   "module": "src.task_extract",
+   "module": "src.whatsapp_task_pipeline.task_extract",
    "line": 57
   },
   {
    "name": "DEDUP_THRESHOLD",
    "kind": "env",
-   "module": "src.task_extract",
-   "line": 50
+   "module": "src.whatsapp_task_pipeline.task_extract",
+   "line": 44
   },
   {
    "name": "TASK_LOG_PATH",
    "kind": "env",
-   "module": "src.task_extract",
+   "module": "src.whatsapp_task_pipeline.task_extract",
    "line": 59
   },
   {
    "name": "TRUSTED_SENDERS",
    "kind": "env",
-   "module": "src.task_extract",
+   "module": "src.whatsapp_task_pipeline.task_extract",
    "line": 67
+  },
+  {
+   "name": "LOG_VERBOSE",
+   "kind": "env",
+   "module": "src.whatsapp_task_pipeline.task_extract",
+   "line": 50
   },
   {
    "name": "HA_URL",
    "kind": "env",
-   "module": "src.task_reminders",
-   "line": 37
+   "module": "src.whatsapp_task_pipeline.task_reminders",
+   "line": 36
   },
   {
    "name": "HA_TOKEN",
    "kind": "env",
-   "module": "src.task_reminders",
-   "line": 38
+   "module": "src.whatsapp_task_pipeline.task_reminders",
+   "line": 37
   },
   {
    "name": "NOTIFY_SERVICE",
    "kind": "env",
-   "module": "src.task_reminders",
-   "line": 39
+   "module": "src.whatsapp_task_pipeline.task_reminders",
+   "line": 38
   },
   {
    "name": "REMINDER_CLICK_PATH",
    "kind": "env",
-   "module": "src.task_reminders",
-   "line": 48
+   "module": "src.whatsapp_task_pipeline.task_reminders",
+   "line": 47
   },
   {
    "name": "TASK_LOG_PATH",
    "kind": "env",
-   "module": "src.task_reminders",
-   "line": 44
+   "module": "src.whatsapp_task_pipeline.task_reminders",
+   "line": 43
   },
   {
    "name": "TASK_STATE_PATH",
    "kind": "env",
-   "module": "src.task_reminders",
-   "line": 42
+   "module": "src.whatsapp_task_pipeline.task_reminders",
+   "line": 41
+  },
+  {
+   "name": "WTP_TEST_CHAT_MODEL",
+   "kind": "env",
+   "module": "tests.test_real_roundtrip",
+   "line": 27
+  },
+  {
+   "name": "WTP_REAL_TESTS",
+   "kind": "env",
+   "module": "tests.test_real_roundtrip",
+   "line": 23
   }
  ],
  "data_models": [],
- "deploy_topology": [],
+ "deploy_topology": [
+  {
+   "kind": "container",
+   "name": "Dockerfile",
+   "detail": "present"
+  },
+  {
+   "kind": "container",
+   "name": "docker-compose.yml",
+   "detail": "present"
+  }
+ ],
  "unparseable": [],
  "generated-by": "/friday:reference (tools/doc-synthesis/extract_architecture.py)",
- "generated-at": "2026-07-20T08:56:32+00:00"
+ "generated-at": "2026-07-20T11:56:22+00:00"
 }

@@ -2,23 +2,48 @@
 
 # Dependency graph (generated)
 
-Intra-tree import graph — **3 modules, 2 import edges**. Every edge is a literal `import` statement in the source; the C4 Component level, correct-by-construction.
+Intra-tree import graph — **12 modules, 9 import edges**. Every edge is a literal `import` statement in the source; the C4 Component level, correct-by-construction.
 
 ```mermaid
 graph LR
-    src_listener_example["src.listener_example"]
-    src_task_extract["src.task_extract"]
-    src_task_reminders["src.task_reminders"]
+    src_whatsapp_task_pipeline___init__["src.whatsapp_task_pipeline.__init__"]
+    src_whatsapp_task_pipeline_check["src.whatsapp_task_pipeline.check"]
+    src_whatsapp_task_pipeline_listener["src.whatsapp_task_pipeline.listener"]
+    src_whatsapp_task_pipeline_providers["src.whatsapp_task_pipeline.providers"]
+    src_whatsapp_task_pipeline_task_extract["src.whatsapp_task_pipeline.task_extract"]
+    src_whatsapp_task_pipeline_task_reminders["src.whatsapp_task_pipeline.task_reminders"]
+    tests_conftest["tests.conftest"]
+    tests_test_checker["tests.test_checker"]
+    tests_test_providers["tests.test_providers"]
+    tests_test_real_roundtrip["tests.test_real_roundtrip"]
+    tests_test_redaction["tests.test_redaction"]
+    tests_test_routing_core["tests.test_routing_core"]
 
-    src_listener_example --> src_task_extract
-    src_task_reminders --> src_task_extract
+    src_whatsapp_task_pipeline_check -.->|deferred| src_whatsapp_task_pipeline_providers
+    src_whatsapp_task_pipeline_listener --> src_whatsapp_task_pipeline_providers
+    src_whatsapp_task_pipeline_listener --> src_whatsapp_task_pipeline_task_extract
+    src_whatsapp_task_pipeline_task_extract --> src_whatsapp_task_pipeline_providers
+    src_whatsapp_task_pipeline_task_reminders --> src_whatsapp_task_pipeline_task_extract
+    tests_test_checker --> tests_conftest
+    tests_test_providers --> tests_conftest
+    tests_test_redaction --> tests_conftest
+    tests_test_routing_core --> tests_conftest
 ```
 
 ## Fan-in / fan-out
 
 | Module | Imports (out) | Imported by (in) |
 | --- | ---: | ---: |
-| `src.listener_example` | 1 | 0 |
-| `src.task_extract` | 0 | 2 |
-| `src.task_reminders` | 1 | 0 |
+| `src.whatsapp_task_pipeline.__init__` | 0 | 0 |
+| `src.whatsapp_task_pipeline.check` | 1 | 0 |
+| `src.whatsapp_task_pipeline.listener` | 2 | 0 |
+| `src.whatsapp_task_pipeline.providers` | 0 | 3 |
+| `src.whatsapp_task_pipeline.task_extract` | 1 | 2 |
+| `src.whatsapp_task_pipeline.task_reminders` | 1 | 0 |
+| `tests.conftest` | 0 | 4 |
+| `tests.test_checker` | 1 | 0 |
+| `tests.test_providers` | 1 | 0 |
+| `tests.test_real_roundtrip` | 0 | 0 |
+| `tests.test_redaction` | 1 | 0 |
+| `tests.test_routing_core` | 1 | 0 |
 
