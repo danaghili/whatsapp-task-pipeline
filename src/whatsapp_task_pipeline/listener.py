@@ -30,6 +30,7 @@ import websockets
 
 from . import providers
 from .task_extract import handle_message as handle_task_message
+from .task_extract import handle_notification_action
 from .task_extract import _redact
 
 HA_URL = os.environ.get("HA_URL", "http://homeassistant.local:8123")
@@ -42,6 +43,13 @@ RECONNECT_DELAY = 10
 # integrations differ in what they fire — set MESSAGE_EVENT to match yours
 # (see README: "Step 1 — the WhatsApp bridge").
 MESSAGE_EVENT = os.environ.get("MESSAGE_EVENT", "whatsapp_message_received")
+
+# Home Assistant fires this when an actionable-notification button is tapped.
+# The tool handles Accept/Skip itself (see actions.py) instead of via an HA
+# automation, because the Android Companion app drops custom notification
+# payload on this event — only the action string (carrying the task id)
+# reliably round-trips. This event name is standard across the Companion apps.
+ACTION_EVENT = "mobile_app_notification_action"
 
 # Debounce: collect a burst of messages from the same sender into one unit
 # before handing off, so "get milk" / "and bread" / "oh and stamps" are
@@ -107,6 +115,21 @@ def _handle_event(event):
     _debounce(sender_number, content)
 
 
+def _handle_action_event(event):
+    """Resolve an Accept/Skip tap from a mobile_app_notification_action event.
+
+    Only the action string is needed (it carries the task id); the pending
+    store holds the rest. Non-ours actions (other notifications) are ignored.
+    """
+    action = event.get("data", {}).get("action", "")
+    if not action:
+        return
+    try:
+        handle_notification_action(action)
+    except Exception as e:  # noqa: BLE001 — never let a bad tap kill the loop
+        print(f"[action] error handling {action!r}: {e}", flush=True)
+
+
 async def listen():
     while True:
         try:
@@ -120,6 +143,8 @@ async def listen():
                     continue
                 print("Connected to Home Assistant WebSocket.", flush=True)
 
+                # Two subscriptions on the one connection: incoming messages,
+                # and the Accept/Skip taps on our actionable notifications.
                 await ws.send(json.dumps({
                     "id": 1,
                     "type": "subscribe_events",
@@ -128,12 +153,25 @@ async def listen():
                 if not json.loads(await ws.recv()).get("success"):
                     await asyncio.sleep(RECONNECT_DELAY)
                     continue
-                print(f"Subscribed to {MESSAGE_EVENT}.", flush=True)
+                await ws.send(json.dumps({
+                    "id": 2,
+                    "type": "subscribe_events",
+                    "event_type": ACTION_EVENT,
+                }))
+                if not json.loads(await ws.recv()).get("success"):
+                    await asyncio.sleep(RECONNECT_DELAY)
+                    continue
+                print(f"Subscribed to {MESSAGE_EVENT} and {ACTION_EVENT}.", flush=True)
 
                 async for raw in ws:
                     msg = json.loads(raw)
-                    if msg.get("type") == "event":
-                        _handle_event(msg["event"])
+                    if msg.get("type") != "event":
+                        continue
+                    event = msg["event"]
+                    if event.get("event_type") == ACTION_EVENT:
+                        _handle_action_event(event)
+                    else:
+                        _handle_event(event)
 
         except (websockets.ConnectionClosed, ConnectionRefusedError, OSError) as e:
             print(f"Connection lost ({e}); reconnecting in {RECONNECT_DELAY}s", flush=True)

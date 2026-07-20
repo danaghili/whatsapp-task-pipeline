@@ -81,8 +81,13 @@ graph LR
 single seam where the universal request style and the cloud guardrail live,
 so no other module can talk to a model or leak past the policy.
 
+Accept/Skip on the actionable notifications is handled by `actions` (a
+pending store keyed by task id, resolved from the `mobile_app_notification_action`
+event by the listener) — not by a Home Assistant automation, because the Android
+Companion app drops custom notification payload on that event. See ARCHITECTURE.md,
+"Accept/Skip".
+
 Non-code building blocks (not modules, so not in the IR):
-`homeassistant/automation.task_notification_response.yaml` (Accept/Skip
-routing inside HA), `deploy/com.example.task-reminders.plist` (launchd
-schedule template), `Dockerfile` + `docker-compose.yml` (the containerised
-run), and `pyproject.toml` (packaging + the three `wtp-*` console commands).
+`deploy/com.example.task-reminders.plist` (launchd schedule template),
+`Dockerfile` + `docker-compose.yml` (the containerised run), and
+`pyproject.toml` (packaging + the three `wtp-*` console commands).

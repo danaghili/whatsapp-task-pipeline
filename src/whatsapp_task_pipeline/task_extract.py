@@ -8,7 +8,9 @@ Given a (debounced) message from a trusted sender, ask a local LLM whether it
 contains a task for the household to act on. High-confidence tasks are added
 straight to a Home Assistant to-do list (after a semantic de-duplication check);
 medium-confidence ones are sent to the phone as an actionable notification with
-Accept / Skip buttons, and a companion HA automation performs the add on Accept.
+Accept / Skip buttons, and the tool itself performs the add on Accept (the task
+is staged by tid in a pending store and resolved when the action event arrives
+— see actions.py for why this is done tool-side rather than in an HA automation).
 
 Design notes
 ------------
@@ -40,6 +42,7 @@ import requests
 # provider layer — one universal request style for local and cloud endpoints,
 # with the cloud guardrail enforced there. See providers.py.
 from . import providers
+from . import actions
 
 # 0.80 catches real-world paraphrases ("buy some milk" vs "pick up milk"
 # measures 0.81 on nomic-embed-text) while same-wording re-asks score 0.97+.
@@ -258,11 +261,16 @@ def _send_actionable(
 ) -> bool:
     """Send a phone notification with Accept / Skip actions.
 
-    The pending decision lives entirely in the notification payload: a random
-    task id (`tid`) is embedded in the action names and the full task rides in
-    `data`. The companion HA automation listens for the action callback and
-    performs the add (Accept) or a no-op log (Skip). This process does not need
-    to stay alive waiting for the answer.
+    The task is staged in the pending store keyed by a random task id (`tid`),
+    which is embedded in the action strings. When the operator taps a button,
+    the listener receives the `mobile_app_notification_action` event and calls
+    `handle_notification_action`, which resolves the tid back to this task and
+    performs the add (Accept) or a logged no-op (Skip).
+
+    We do NOT put the task in the notification's `data`: the Android Companion
+    app drops custom payload on the action callback (nested or flat), so only
+    the tid — carried by the action string — reliably round-trips. See
+    actions.py for the captured-event evidence.
 
     Body-tap deep-links to the sender's chat via the wa.me universal link so the
     original message can be read before deciding.
@@ -270,11 +278,20 @@ def _send_actionable(
     if not HA_TOKEN:
         return False
     tid = uuid.uuid4().hex[:10]
+    # Stage the task BEFORE sending, so an instant tap can't race the write.
+    actions.stage(
+        tid,
+        text=text,
+        due_hint=due_hint,
+        sender=sender_name,
+        sender_number=sender_number,
+        entity_id=entity_id,
+    )
     title = f"Possible task from {sender_name}"
     body = text if not due_hint else f"{text}\n({due_hint})"
-    actions = [
-        {"action": f"ACCEPT_TASK_{tid}", "title": "✓ Accept"},
-        {"action": f"SKIP_TASK_{tid}", "title": "✗ Skip"},
+    action_buttons = [
+        {"action": f"{actions.ACCEPT_PREFIX}{tid}", "title": "✓ Accept"},
+        {"action": f"{actions.SKIP_PREFIX}{tid}", "title": "✗ Skip"},
     ]
     chat_url = f"https://wa.me/{sender_number}"
     payload = {
@@ -282,16 +299,8 @@ def _send_actionable(
         "message": body,
         "data": {
             "tag": f"task_{tid}",
-            "actions": actions,
+            "actions": action_buttons,
             "clickAction": chat_url,
-            "task": {
-                "tid": tid,
-                "text": text,
-                "due_hint": due_hint,
-                "sender": sender_name,
-                "sender_number": sender_number,
-                "entity_id": entity_id,
-            },
         },
     }
     try:
@@ -307,6 +316,16 @@ def _send_actionable(
     except requests.RequestException as e:
         _log(f"[actionable] failed: {e}")
         return False
+
+
+def handle_notification_action(action: str) -> bool:
+    """Resolve an Accept/Skip tap. Called by the listener on each
+    `mobile_app_notification_action` event.
+
+    Returns True if the action string was one of ours. Wires the pending-store
+    resolution in actions.py to this module's `_add_todo` and `_log`.
+    """
+    return actions.handle_action(action, add_todo=_add_todo, log=_log)
 
 
 def handle_message(combined_text: str, sender_number: str) -> bool:

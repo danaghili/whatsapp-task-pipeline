@@ -12,6 +12,7 @@ import pytest
 import requests as requests_lib
 
 from whatsapp_task_pipeline import task_extract
+from whatsapp_task_pipeline import actions as actions_mod
 from conftest import FakeResponse, chat_reply, classification
 
 TRUSTED = "441234567890"
@@ -60,12 +61,46 @@ def test_medium_confidence_sends_actionable_notification(net):
     assert net.calls_to("todo/add_item") == []  # medium never writes directly
     notifies = net.calls_to("notify")
     assert len(notifies) == 1
-    actions = notifies[0][1]["data"]["actions"]
-    assert actions[0]["action"].startswith("ACCEPT_TASK_")
-    assert actions[1]["action"].startswith("SKIP_TASK_")
-    # The whole pending decision travels in the payload (stateless by design).
-    assert notifies[0][1]["data"]["task"]["text"] == "order food"
-    assert notifies[0][1]["data"]["task"]["entity_id"] == "todo.tasks_inbox"
+    buttons = notifies[0][1]["data"]["actions"]
+    assert buttons[0]["action"].startswith("ACCEPT_TASK_")
+    assert buttons[1]["action"].startswith("SKIP_TASK_")
+    # No custom payload rides the notification — the Android app drops it. The
+    # task is staged by tid instead (the tid is carried in the action string).
+    assert "task" not in notifies[0][1]["data"]
+    tid = buttons[0]["action"][len(actions_mod.ACCEPT_PREFIX):]
+    staged = actions_mod._load()[tid]
+    assert staged["text"] == "order food"
+    assert staged["entity_id"] == "todo.tasks_inbox"
+    assert staged["due_hint"] == "tonight"
+
+
+def test_accept_tap_adds_the_staged_task(net):
+    net.route("/chat/completions", chat_reply(classification(True, "medium", [{"text": "order food", "due_hint": None}])))
+    net.route("notify", {})
+    net.route("todo/add_item", {})
+
+    assert task_extract.handle_message("maybe order food tonight?", TRUSTED) is True
+    tid = net.calls_to("notify")[0][1]["data"]["actions"][0]["action"][len(actions_mod.ACCEPT_PREFIX):]
+
+    # The operator taps Accept — the listener calls this with the action string.
+    assert task_extract.handle_notification_action(f"{actions_mod.ACCEPT_PREFIX}{tid}") is True
+    adds = net.calls_to("todo/add_item")
+    assert len(adds) == 1
+    assert adds[0][1]["item"] == "order food"
+    assert adds[0][1]["entity_id"] == "todo.tasks_inbox"
+    # Pending entry consumed — a duplicate delivery cannot add twice.
+    assert task_extract.handle_notification_action(f"{actions_mod.ACCEPT_PREFIX}{tid}") is True
+    assert len(net.calls_to("todo/add_item")) == 1
+
+
+def test_skip_tap_adds_nothing(net):
+    net.route("/chat/completions", chat_reply(classification(True, "medium", [{"text": "order food", "due_hint": None}])))
+    net.route("notify", {})
+
+    assert task_extract.handle_message("maybe order food tonight?", TRUSTED) is True
+    tid = net.calls_to("notify")[0][1]["data"]["actions"][1]["action"][len(actions_mod.SKIP_PREFIX):]
+    assert task_extract.handle_notification_action(f"{actions_mod.SKIP_PREFIX}{tid}") is True
+    assert net.calls_to("todo/add_item") == []
 
 
 def test_low_confidence_is_dropped(net):

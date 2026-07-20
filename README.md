@@ -175,12 +175,13 @@ chat model, the embeddings model (including the classic silent trap where a
 chat-only server can't do embeddings), your trusted-senders list, and the
 privacy posture. Re-run until it's all green.
 
-### Step 6 — wire the buttons and start it
+### Step 6 — start it
 
-Import
-[`homeassistant/automation.task_notification_response.yaml`](homeassistant/automation.task_notification_response.yaml)
-in HA (Settings → Automations → ⋮ → Edit in YAML) so the Accept/Skip buttons
-work. Then:
+No Home Assistant automation is needed: the listener handles the Accept/Skip
+buttons itself (it subscribes to the `mobile_app_notification_action` event and
+resolves the tap against a small pending store — see
+[`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md), "Accept/Skip"). Just start the
+services:
 
 ```bash
 # Python route — the listener is a long-lived process:
