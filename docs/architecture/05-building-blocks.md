@@ -26,6 +26,11 @@ graph is correct by construction
   loop, per-sender debounce, handler fan-out; enforces the cloud guardrail
   at startup. [why: docs/ARCHITECTURE.md § "One front door, N services";
   DECISIONS.md D-0013 (configurable event)]
+- `src.whatsapp_task_pipeline.actions` — tool-side Accept/Skip: the
+  tid-keyed pending store (staged at send, popped before add, TTL-pruned,
+  atomic writes) and the injectable action resolver. [why: DECISIONS.md
+  D-0018 — the Android Companion app drops custom notification payload, so
+  only the action string round-trips]
 - `src.whatsapp_task_pipeline.check` — the `wtp-check` command: validates a
   whole setup with a green/red line per check, plain-language reasons,
   secrets reported by validity only. [why: DECISIONS.md D-0004 (catch-list),
@@ -42,6 +47,8 @@ graph is correct by construction
   table, guardrail unit proofs. [why: D-0010, D-0002]
 - `tests.test_checker` — the checker catch-list matrix against deliberately
   broken configs. [why: D-0004]
+- `tests.test_actions` — the pending store: accept / skip / idempotent
+  second tap / unknown action / expiry / persistence. [why: D-0018]
 - `tests.test_redaction` — default log holds no message content; verbose
   restores it. [why: D-0005 — redacted-by-default logging]
 - `tests.test_real_roundtrip` — the make-or-break suite against REAL Ollama
@@ -54,12 +61,14 @@ graph is correct by construction
 ```mermaid
 graph LR
     src_whatsapp_task_pipeline___init__["src.whatsapp_task_pipeline.__init__"]
+    src_whatsapp_task_pipeline_actions["src.whatsapp_task_pipeline.actions"]
     src_whatsapp_task_pipeline_check["src.whatsapp_task_pipeline.check"]
     src_whatsapp_task_pipeline_listener["src.whatsapp_task_pipeline.listener"]
     src_whatsapp_task_pipeline_providers["src.whatsapp_task_pipeline.providers"]
     src_whatsapp_task_pipeline_task_extract["src.whatsapp_task_pipeline.task_extract"]
     src_whatsapp_task_pipeline_task_reminders["src.whatsapp_task_pipeline.task_reminders"]
     tests_conftest["tests.conftest"]
+    tests_test_actions["tests.test_actions"]
     tests_test_checker["tests.test_checker"]
     tests_test_providers["tests.test_providers"]
     tests_test_real_roundtrip["tests.test_real_roundtrip"]
@@ -69,6 +78,7 @@ graph LR
     src_whatsapp_task_pipeline_check --> src_whatsapp_task_pipeline_providers
     src_whatsapp_task_pipeline_listener --> src_whatsapp_task_pipeline_providers
     src_whatsapp_task_pipeline_listener --> src_whatsapp_task_pipeline_task_extract
+    src_whatsapp_task_pipeline_task_extract --> src_whatsapp_task_pipeline_actions
     src_whatsapp_task_pipeline_task_extract --> src_whatsapp_task_pipeline_providers
     src_whatsapp_task_pipeline_task_reminders --> src_whatsapp_task_pipeline_task_extract
     tests_test_checker --> tests_conftest

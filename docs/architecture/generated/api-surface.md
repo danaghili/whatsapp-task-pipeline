@@ -9,29 +9,31 @@
 
 ## Config surface (env)
 
-- `HA_TOKEN` — read in `src.whatsapp_task_pipeline.check:111`
-- `NOTIFY_SERVICE` — read in `src.whatsapp_task_pipeline.check:148`
-- `TRUSTED_SENDERS` — read in `src.whatsapp_task_pipeline.check:84`
-- `HA_URL` — read in `src.whatsapp_task_pipeline.check:110`
-- `HA_URL` — read in `src.whatsapp_task_pipeline.listener:35`
-- `HA_TOKEN` — read in `src.whatsapp_task_pipeline.listener:36`
-- `MESSAGE_EVENT` — read in `src.whatsapp_task_pipeline.listener:44`
+- `TASK_PENDING_TTL_SECONDS` — read in `src.whatsapp_task_pipeline.actions:49`
+- `TASK_PENDING_PATH` — read in `src.whatsapp_task_pipeline.actions:43`
+- `HA_TOKEN` — read in `src.whatsapp_task_pipeline.check:92`
+- `NOTIFY_SERVICE` — read in `src.whatsapp_task_pipeline.check:129`
+- `TRUSTED_SENDERS` — read in `src.whatsapp_task_pipeline.check:65`
+- `HA_URL` — read in `src.whatsapp_task_pipeline.check:91`
+- `HA_URL` — read in `src.whatsapp_task_pipeline.listener:36`
+- `HA_TOKEN` — read in `src.whatsapp_task_pipeline.listener:37`
+- `MESSAGE_EVENT` — read in `src.whatsapp_task_pipeline.listener:45`
 - `CHAT_API_KEY` — read in `src.whatsapp_task_pipeline.providers:51`
 - `CHAT_MODEL` — read in `src.whatsapp_task_pipeline.providers:52`
 - `EMBED_API_KEY` — read in `src.whatsapp_task_pipeline.providers:55`
 - `EMBED_MODEL` — read in `src.whatsapp_task_pipeline.providers:56`
 - `CHAT_EXTRA_BODY` — read in `src.whatsapp_task_pipeline.providers:61`
 - `ACCEPT_CLOUD_TEXT` — read in `src.whatsapp_task_pipeline.providers:66`
-- `TASK_LOG_PATH` — read in `src.whatsapp_task_pipeline.providers:189`
+- `TASK_LOG_PATH` — read in `src.whatsapp_task_pipeline.providers:199`
 - `CHAT_BASE_URL` — read in `src.whatsapp_task_pipeline.providers:50`
 - `EMBED_BASE_URL` — read in `src.whatsapp_task_pipeline.providers:54`
-- `HA_URL` — read in `src.whatsapp_task_pipeline.task_extract:52`
-- `HA_TOKEN` — read in `src.whatsapp_task_pipeline.task_extract:53`
-- `NOTIFY_SERVICE` — read in `src.whatsapp_task_pipeline.task_extract:57`
-- `DEDUP_THRESHOLD` — read in `src.whatsapp_task_pipeline.task_extract:44`
-- `TASK_LOG_PATH` — read in `src.whatsapp_task_pipeline.task_extract:59`
-- `TRUSTED_SENDERS` — read in `src.whatsapp_task_pipeline.task_extract:67`
-- `LOG_VERBOSE` — read in `src.whatsapp_task_pipeline.task_extract:50`
+- `HA_URL` — read in `src.whatsapp_task_pipeline.task_extract:58`
+- `HA_TOKEN` — read in `src.whatsapp_task_pipeline.task_extract:59`
+- `NOTIFY_SERVICE` — read in `src.whatsapp_task_pipeline.task_extract:63`
+- `DEDUP_THRESHOLD` — read in `src.whatsapp_task_pipeline.task_extract:50`
+- `TASK_LOG_PATH` — read in `src.whatsapp_task_pipeline.task_extract:65`
+- `TRUSTED_SENDERS` — read in `src.whatsapp_task_pipeline.task_extract:73`
+- `LOG_VERBOSE` — read in `src.whatsapp_task_pipeline.task_extract:56`
 - `HA_URL` — read in `src.whatsapp_task_pipeline.task_reminders:36`
 - `HA_TOKEN` — read in `src.whatsapp_task_pipeline.task_reminders:37`
 - `NOTIFY_SERVICE` — read in `src.whatsapp_task_pipeline.task_reminders:38`

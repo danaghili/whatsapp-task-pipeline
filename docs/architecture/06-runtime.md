@@ -29,10 +29,12 @@ sequenceDiagram
         TE->>TE: _cosine ≥ DEDUP_THRESHOLD → skip as duplicate
         TE->>HA: _add_todo → todo.add_item
     else MEDIUM confidence
+        TE->>TE: actions.stage(tid, task) — pending store, staged BEFORE send
         TE->>HA: _send_actionable → notify.* with ACCEPT_TASK_/SKIP_TASK_ buttons
-        HA->>Ph: actionable notification (full task in payload)
-        Ph->>HA: mobile_app_notification_action
-        HA->>HA: automation adds item (Accept) or logs (Skip)
+        HA->>Ph: actionable notification (tid rides the action string only)
+        Ph->>HA: mobile_app_notification_action (custom payload dropped by Android)
+        HA->>L: action event (second WS subscription)
+        L->>TE: handle_notification_action → pop tid, add (Accept) or log (Skip)
     else not a task / LOW / embeddings unreachable de-dup off
         TE->>TE: safe skip or add-without-dedup — never a dropped task
     end

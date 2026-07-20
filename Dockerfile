@@ -17,6 +17,7 @@ USER wtp
 # Logs and reminder-timing state live under the user's home inside the
 # container; override TASK_LOG_PATH / TASK_STATE_PATH to persist them.
 ENV TASK_LOG_PATH=/home/wtp/task_pipeline.log \
-    TASK_STATE_PATH=/home/wtp/task_pipeline_state.json
+    TASK_STATE_PATH=/home/wtp/task_pipeline_state.json \
+    TASK_PENDING_PATH=/home/wtp/task_pipeline_pending.json
 
 CMD ["wtp-listen"]

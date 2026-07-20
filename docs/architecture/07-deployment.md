@@ -8,7 +8,6 @@ graph TB
     subgraph ha_host["Home Assistant host"]
         bridge["WhatsApp bridge integration<br/>(HACS, user-installed)"]
         todo["todo.* list entity"]
-        auto["Accept/Skip automation"]
         notify["notify.mobile_app_*"]
     end
     subgraph app_host["Application host — pip venv OR docker compose"]

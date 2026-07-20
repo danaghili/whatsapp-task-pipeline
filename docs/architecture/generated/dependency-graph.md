@@ -2,17 +2,19 @@
 
 # Dependency graph (generated)
 
-Intra-tree import graph — **12 modules, 9 import edges**. Every edge is a literal `import` statement in the source; the C4 Component level, correct-by-construction.
+Intra-tree import graph — **14 modules, 10 import edges**. Every edge is a literal `import` statement in the source; the C4 Component level, correct-by-construction.
 
 ```mermaid
 graph LR
     src_whatsapp_task_pipeline___init__["src.whatsapp_task_pipeline.__init__"]
+    src_whatsapp_task_pipeline_actions["src.whatsapp_task_pipeline.actions"]
     src_whatsapp_task_pipeline_check["src.whatsapp_task_pipeline.check"]
     src_whatsapp_task_pipeline_listener["src.whatsapp_task_pipeline.listener"]
     src_whatsapp_task_pipeline_providers["src.whatsapp_task_pipeline.providers"]
     src_whatsapp_task_pipeline_task_extract["src.whatsapp_task_pipeline.task_extract"]
     src_whatsapp_task_pipeline_task_reminders["src.whatsapp_task_pipeline.task_reminders"]
     tests_conftest["tests.conftest"]
+    tests_test_actions["tests.test_actions"]
     tests_test_checker["tests.test_checker"]
     tests_test_providers["tests.test_providers"]
     tests_test_real_roundtrip["tests.test_real_roundtrip"]
@@ -22,6 +24,7 @@ graph LR
     src_whatsapp_task_pipeline_check -.->|deferred| src_whatsapp_task_pipeline_providers
     src_whatsapp_task_pipeline_listener --> src_whatsapp_task_pipeline_providers
     src_whatsapp_task_pipeline_listener --> src_whatsapp_task_pipeline_task_extract
+    src_whatsapp_task_pipeline_task_extract --> src_whatsapp_task_pipeline_actions
     src_whatsapp_task_pipeline_task_extract --> src_whatsapp_task_pipeline_providers
     src_whatsapp_task_pipeline_task_reminders --> src_whatsapp_task_pipeline_task_extract
     tests_test_checker --> tests_conftest
@@ -35,12 +38,14 @@ graph LR
 | Module | Imports (out) | Imported by (in) |
 | --- | ---: | ---: |
 | `src.whatsapp_task_pipeline.__init__` | 0 | 0 |
+| `src.whatsapp_task_pipeline.actions` | 0 | 1 |
 | `src.whatsapp_task_pipeline.check` | 1 | 0 |
 | `src.whatsapp_task_pipeline.listener` | 2 | 0 |
 | `src.whatsapp_task_pipeline.providers` | 0 | 3 |
-| `src.whatsapp_task_pipeline.task_extract` | 1 | 2 |
+| `src.whatsapp_task_pipeline.task_extract` | 2 | 2 |
 | `src.whatsapp_task_pipeline.task_reminders` | 1 | 0 |
 | `tests.conftest` | 0 | 4 |
+| `tests.test_actions` | 0 | 0 |
 | `tests.test_checker` | 1 | 0 |
 | `tests.test_providers` | 1 | 0 |
 | `tests.test_real_roundtrip` | 0 | 0 |

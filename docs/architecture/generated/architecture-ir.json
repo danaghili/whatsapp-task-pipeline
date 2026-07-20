@@ -3,27 +3,32 @@
   {
    "id": "src.whatsapp_task_pipeline.__init__",
    "path": "src/whatsapp_task_pipeline/__init__.py",
-   "loc": 11
+   "loc": 45
+  },
+  {
+   "id": "src.whatsapp_task_pipeline.actions",
+   "path": "src/whatsapp_task_pipeline/actions.py",
+   "loc": 142
   },
   {
    "id": "src.whatsapp_task_pipeline.check",
    "path": "src/whatsapp_task_pipeline/check.py",
-   "loc": 369
+   "loc": 350
   },
   {
    "id": "src.whatsapp_task_pipeline.listener",
    "path": "src/whatsapp_task_pipeline/listener.py",
-   "loc": 176
+   "loc": 214
   },
   {
    "id": "src.whatsapp_task_pipeline.providers",
    "path": "src/whatsapp_task_pipeline/providers.py",
-   "loc": 252
+   "loc": 262
   },
   {
    "id": "src.whatsapp_task_pipeline.task_extract",
    "path": "src/whatsapp_task_pipeline/task_extract.py",
-   "loc": 383
+   "loc": 405
   },
   {
    "id": "src.whatsapp_task_pipeline.task_reminders",
@@ -33,7 +38,12 @@
   {
    "id": "tests.conftest",
    "path": "tests/conftest.py",
-   "loc": 89
+   "loc": 93
+  },
+  {
+   "id": "tests.test_actions",
+   "path": "tests/test_actions.py",
+   "loc": 109
   },
   {
    "id": "tests.test_checker",
@@ -43,7 +53,7 @@
   {
    "id": "tests.test_providers",
    "path": "tests/test_providers.py",
-   "loc": 174
+   "loc": 179
   },
   {
    "id": "tests.test_real_roundtrip",
@@ -58,7 +68,7 @@
   {
    "id": "tests.test_routing_core",
    "path": "tests/test_routing_core.py",
-   "loc": 184
+   "loc": 219
   }
  ],
  "edges": [
@@ -66,7 +76,7 @@
    "from": "src.whatsapp_task_pipeline.check",
    "to": "src.whatsapp_task_pipeline.providers",
    "kind": "import",
-   "line": 211,
+   "line": 192,
    "deferred": true
   },
   {
@@ -85,9 +95,16 @@
   },
   {
    "from": "src.whatsapp_task_pipeline.task_extract",
+   "to": "src.whatsapp_task_pipeline.actions",
+   "kind": "import",
+   "line": 45,
+   "deferred": false
+  },
+  {
+   "from": "src.whatsapp_task_pipeline.task_extract",
    "to": "src.whatsapp_task_pipeline.providers",
    "kind": "import",
-   "line": 42,
+   "line": 44,
    "deferred": false
   },
   {
@@ -122,53 +139,65 @@
    "from": "tests.test_routing_core",
    "to": "tests.conftest",
    "kind": "import",
-   "line": 15,
+   "line": 16,
    "deferred": false
   }
  ],
  "routes": [],
  "config_surface": [
   {
+   "name": "TASK_PENDING_TTL_SECONDS",
+   "kind": "env",
+   "module": "src.whatsapp_task_pipeline.actions",
+   "line": 49
+  },
+  {
+   "name": "TASK_PENDING_PATH",
+   "kind": "env",
+   "module": "src.whatsapp_task_pipeline.actions",
+   "line": 43
+  },
+  {
    "name": "HA_TOKEN",
    "kind": "env",
    "module": "src.whatsapp_task_pipeline.check",
-   "line": 111
+   "line": 92
   },
   {
    "name": "NOTIFY_SERVICE",
    "kind": "env",
    "module": "src.whatsapp_task_pipeline.check",
-   "line": 148
+   "line": 129
   },
   {
    "name": "TRUSTED_SENDERS",
    "kind": "env",
    "module": "src.whatsapp_task_pipeline.check",
-   "line": 84
+   "line": 65
   },
   {
    "name": "HA_URL",
    "kind": "env",
    "module": "src.whatsapp_task_pipeline.check",
-   "line": 110
+   "line": 91
   },
   {
    "name": "HA_URL",
    "kind": "env",
    "module": "src.whatsapp_task_pipeline.listener",
-   "line": 35
+   "line": 36
   },
   {
    "name": "HA_TOKEN",
    "kind": "env",
    "module": "src.whatsapp_task_pipeline.listener",
-   "line": 36
+   "line": 37
   },
   {
    "name": "MESSAGE_EVENT",
    "kind": "env",
    "module": "src.whatsapp_task_pipeline.listener",
-   "line": 44
+   "line": 45
   },
   {
    "name": "CHAT_API_KEY",
@@ -210,7 +239,7 @@
    "name": "TASK_LOG_PATH",
    "kind": "env",
    "module": "src.whatsapp_task_pipeline.providers",
-   "line": 189
+   "line": 199
   },
   {
    "name": "CHAT_BASE_URL",
@@ -228,43 +257,43 @@
    "name": "HA_URL",
    "kind": "env",
    "module": "src.whatsapp_task_pipeline.task_extract",
-   "line": 52
+   "line": 58
   },
   {
    "name": "HA_TOKEN",
    "kind": "env",
    "module": "src.whatsapp_task_pipeline.task_extract",
-   "line": 53
+   "line": 59
   },
   {
    "name": "NOTIFY_SERVICE",
    "kind": "env",
    "module": "src.whatsapp_task_pipeline.task_extract",
-   "line": 57
+   "line": 63
   },
   {
    "name": "DEDUP_THRESHOLD",
    "kind": "env",
    "module": "src.whatsapp_task_pipeline.task_extract",
-   "line": 44
+   "line": 50
   },
   {
    "name": "TASK_LOG_PATH",
    "kind": "env",
    "module": "src.whatsapp_task_pipeline.task_extract",
-   "line": 59
+   "line": 65
   },
   {
    "name": "TRUSTED_SENDERS",
    "kind": "env",
    "module": "src.whatsapp_task_pipeline.task_extract",
-   "line": 67
+   "line": 73
   },
   {
    "name": "LOG_VERBOSE",
    "kind": "env",
    "module": "src.whatsapp_task_pipeline.task_extract",
-   "line": 50
+   "line": 56
   },
   {
    "name": "HA_URL",
@@ -330,5 +359,5 @@
  ],
  "unparseable": [],
  "generated-by": "/friday:reference (tools/doc-synthesis/extract_architecture.py)",
- "generated-at": "2026-07-20T11:56:22+00:00"
+ "generated-at": "2026-07-20T13:59:48+00:00"
 }

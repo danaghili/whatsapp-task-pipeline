@@ -12,9 +12,10 @@
 | Cloud acknowledgment (`ACCEPT_CLOUD_TEXT`) | The one-time, deliberate switch without which a non-local AI endpoint refuses to run — the "conscious, never accidental" half of decision D-0002. |
 | Debounce | The 8-second window in which a burst of messages from one sender is joined into a single unit before classification. |
 | De-dup | Embedding-based comparison (cosine ≥ `DEDUP_THRESHOLD`, default 0.80 (D-0016)) of a new task against *open* items only. No embeddings → check off, nothing dropped. |
-| Actionable notification | An HA Companion-app notification carrying Accept/Skip buttons and the full pending task in its payload. |
+| Actionable notification | An HA Companion-app notification with Accept/Skip buttons; only the task id survives the tap (in the action string), so the task itself waits in the pending store (D-0018). |
 | Redacted logging | The default: logs hold flow and errors, never message/task wording (`<redacted N chars>`); `LOG_VERBOSE` restores content locally. |
 | wtp-check | The config checker command: one green/red line per check, plain-language fixes, secrets reported by validity only. |
 | Grace window / escalation / quiet hours | 1h before a task's first reminder; overdue tone after 24h; no reminders outside 07:00–23:00. |
 | Sidecar state | The reminder daemon's JSON file holding only per-item timing, never task content. |
+| Pending store | `TASK_PENDING_PATH` — staged medium-confidence tasks keyed by tid, popped before add (idempotent), TTL-pruned. Holds task text locally, like the to-do list itself. |
 | Showcase extraction | This repo's origin: generalised from a private working deployment; since INC-001, also a plug-and-play tool. |

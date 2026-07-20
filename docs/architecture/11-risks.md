@@ -27,7 +27,11 @@ risks are recorded, not deleted).
    walkthrough's mechanics are proven against a real Home Assistant
    (docs/hardening/inc-001-real-ha-verification.md); still open: a fresh-eyes
    stranger with a stopwatch, a real WhatsApp bridge, and real phone taps.
-7. **Paraphrase de-dup misses at the default threshold.** Real-model
+7. **Accept/Skip taps need the listener alive.** The tool resolves button
+   taps itself (D-0018), so a tap while the listener is down is lost (the
+   notification stays on the phone; re-asking re-stages). Acceptable for a
+   supervised daemon; documented in ARCHITECTURE.md § Accept/Skip.
+8. **Paraphrase de-dup misses at the default threshold.** Real-model
    measurement: paraphrases score 0.81–0.83 against nomic-embed-text, under
    the 0.85 default — a re-phrased ask lands as a second item (one tap to
    dismiss; the designed fail direction). Same-wording asks (0.97+) are

@@ -46,7 +46,7 @@ reason (D-0005).
 | State | Owner |
 |---|---|
 | What tasks exist | Home Assistant to-do list |
-| A pending Accept/Skip | The phone notification payload itself |
+| A pending Accept/Skip | The tool's pending store, keyed by the tid in the action string (D-0018 — Android drops custom notification payload) |
 | Ping timing | Reminder daemon's sidecar JSON (`TASK_STATE_PATH`) |
 | "Is this a task?" | Nowhere — recomputed per message |
 

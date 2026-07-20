@@ -14,7 +14,7 @@ graph LR
     pipeline -- "/embeddings<br/>(independently configured)" --> embed["Embeddings endpoint<br/>(de-dup; optional)"]
     ha -- "actionable notification" --> phone(["Phone<br/>(Companion app)"])
     phone -- "mobile_app_notification_action" --> ha
-    ha -- "Accept/Skip automation" --> ha
+    ha -- "mobile_app_notification_action<br/>(tap events, WS)" --> pipeline
 ```
 
 ## In scope (this repository)
@@ -27,7 +27,7 @@ graph LR
 - Reference listener: WebSocket subscription + debounce + handler fan-out
   (`listener.py`)
 - Setup validation (`check.py` — the `wtp-check` command)
-- The Accept/Skip automation (`homeassistant/`), packaging (`pyproject.toml`),
+- Tool-side Accept/Skip resolution (`actions.py` — D-0018), packaging (`pyproject.toml`),
   container setup (`Dockerfile`, `docker-compose.yml`), launchd template
   (`deploy/`)
 
