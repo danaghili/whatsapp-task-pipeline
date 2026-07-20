@@ -140,12 +140,17 @@ While you're in the file, fill in the rest:
 
 ### Step 4 — the AI
 
+**Use whatever chat model you want** — the classifier works with any capable
+model; just set `CHAT_MODEL` to whatever you pull (or, for a cloud provider,
+whatever your plan offers). The examples below are what this pipeline runs at
+home; bigger models classify a little better, smaller ones respond faster.
+
 The default `.env` points at an Ollama on the same machine. On whichever
 machine runs Ollama:
 
 ```bash
-ollama pull qwen3:32b          # the classifier (any capable chat model works;
-                               #   set CHAT_MODEL to what you pull)
+ollama pull qwen3.6:27b        # example classifier (qwen3.6:35b if you have
+                               #   the memory — or ANY model you prefer)
 ollama pull nomic-embed-text   # powers the duplicate check
 ```
 

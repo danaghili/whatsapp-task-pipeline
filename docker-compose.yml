@@ -46,7 +46,8 @@ services:
 # for chat models — fine for trying things out, not for daily use. Then set
 # in .env:  CHAT_BASE_URL=http://ollama:11434/v1
 #           EMBED_BASE_URL=http://ollama:11434/v1
-# and pull your models once:  docker compose exec ollama ollama pull qwen3:4b
+# and pull your models once (any small model works CPU-only, e.g.):
+#                             docker compose exec ollama ollama pull qwen3:0.6b
 #                             docker compose exec ollama ollama pull nomic-embed-text
 #
 #  ollama:

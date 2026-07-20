@@ -49,7 +49,7 @@ import requests
 
 CHAT_BASE_URL = os.environ.get("CHAT_BASE_URL", "http://localhost:11434/v1").rstrip("/")
 CHAT_API_KEY = os.environ.get("CHAT_API_KEY", "")
-CHAT_MODEL = os.environ.get("CHAT_MODEL", "qwen3:32b")
+CHAT_MODEL = os.environ.get("CHAT_MODEL", "qwen3.6:27b")
 
 EMBED_BASE_URL = os.environ.get("EMBED_BASE_URL", "http://localhost:11434/v1").rstrip("/")
 EMBED_API_KEY = os.environ.get("EMBED_API_KEY", "")

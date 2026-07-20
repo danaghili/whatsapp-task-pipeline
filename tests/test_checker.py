@@ -117,14 +117,14 @@ def test_unreachable_chat_endpoint_mentions_ollama_serve(base_env, monkeypatch, 
 
 
 def test_missing_chat_model_lists_what_is_available(base_env, monkeypatch, report, capsys):
-    monkeypatch.setattr(providers, "CHAT_MODEL", "qwen3:32b")
+    monkeypatch.setattr(providers, "CHAT_MODEL", "qwen3.6:27b")
     monkeypatch.setattr(
         check, "_get", lambda *a, **k: FakeResponse({"data": [{"id": "llama3.2:1b"}]})
     )
     check.check_chat_endpoint(report)
     assert report.failed == 1
     text = out(capsys)
-    assert "'qwen3:32b' is not on" in text
+    assert "'qwen3.6:27b' is not on" in text
     assert "llama3.2:1b" in text
 
 
